@@ -134,11 +134,11 @@ const ReviewCard = ({ review, onDelete, onUpdate }) => {
               <span className="text-gray-400 text-sm">{formatDate(review.createdAt)}</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <StarRating initialRating={Math.floor(review.rating / 2)} readOnly maxRating={5} />
+            {/* <div className="flex items-center gap-2">
+              <StarRating initialRating={Math.floor(review.rating)} readOnly maxRating={5} />
               <span className="font-bold">{review.rating}</span>
-              <span className="text-gray-400">/10</span>
-            </div>
+              <span className="text-gray-400">/ 5</span>
+            </div> */}
           </div>
 
           <h3 className="text-xl font-medium mb-3">{review.title}</h3>

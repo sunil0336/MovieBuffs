@@ -120,7 +120,7 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded }) => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium mb-2">Your Rating</label>
-          <StarRating initialRating={rating} onRatingChange={setRating} maxRating={10} />
+          <StarRating initialRating={rating} onRatingChange={setRating} maxRating={5} />
         </div>
 
         <div>

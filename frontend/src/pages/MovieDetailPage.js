@@ -81,10 +81,10 @@ const MovieDetailPage = () => {
     }
   }, [id, currentPage, filterOptions])
 
-  const handleFilterChange = (newFilters) => {
-    setFilterOptions(newFilters)
-    setCurrentPage(1) // Reset to first page when filters change
-  }
+  // const handleFilterChange = (newFilters) => {
+  //   setFilterOptions(newFilters)
+  //   setCurrentPage(1) // Reset to first page when filters change
+  // }
 
   const handleReviewAdded = (newReview) => {
     // Refresh reviews after adding a new one
@@ -101,6 +101,18 @@ const MovieDetailPage = () => {
       }))
     }
   }
+
+  const [copied, setCopied] = useState(false);
+
+  const handleShareClick = () => {
+    const shareLink = window.location.href;
+    navigator.clipboard.writeText(shareLink)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((error) => console.error("Error copying text: ", error));
+  };
 
   if (loading) {
     return (
@@ -132,7 +144,8 @@ const MovieDetailPage = () => {
           {movie.backdrop && (
             <div className="absolute inset-0 w-full h-full">
               <img
-                src={`/images/${movie.backdrop || "/placeholder.svg"}`}
+                // src={`/images/${movie.backdrop || "/placeholder.svg"}`}
+                src={movie.backdrop || "/placeholder.svg"}
                 alt={movie.title}
                 className="w-full h-full object-cover opacity-20"
               />
@@ -152,8 +165,9 @@ const MovieDetailPage = () => {
               <div className="w-full md:w-1/3 lg:w-1/4">
                 <div className="aspect-[2/3] relative rounded-lg overflow-hidden">
                   <img
-                    src={`/images/${movie.poster || "/placeholder.svg?height=450&width=300"}`}
-                    // <img src={`/images/action/${movie.imageName || "placeholder.svg"}`} alt={movie.title} />
+                    // src={`/images/${movie.poster || "/placeholder.svg?height=450&width=300"}`}
+                    src={movie.poster || "/placeholder.svg?height=450&width=300"}
+
 
                     alt={movie.title}
                     className="w-full h-full object-cover"
@@ -218,10 +232,14 @@ const MovieDetailPage = () => {
                     Watch Trailer
                   </button>
 
-                  <button className="px-4 py-2 border border-white text-white hover:bg-purple-800 rounded">
+
+                  <button className="px-4 py-2 border border-white text-white hover:bg-purple-800 rounded"
+                    onClick={handleShareClick}
+                  >
                     <FiShare className="w-4 h-4 inline mr-2" />
                     Share
                   </button>
+
 
                   <button
                     className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black rounded"
@@ -230,6 +248,14 @@ const MovieDetailPage = () => {
                     <FiStar className="w-4 h-4 inline mr-2" />
                     Write a Review
                   </button>
+                  {copied && (
+                    <div
+                      className=" text-green-500"
+                      style={{ position: "relative", top: "10px" }}
+                    >
+                      Link copied to clipboard!
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -272,9 +298,8 @@ const MovieDetailPage = () => {
 
               <div className="flex items-center justify-center gap-2 mt-8">
                 <button
-                  className={`w-8 h-8 flex items-center justify-center rounded-full ${
-                    currentPage === 1 ? "text-gray-500 cursor-not-allowed" : "text-white hover:bg-purple-800"
-                  }`}
+                  className={`w-8 h-8 flex items-center justify-center rounded-full ${currentPage === 1 ? "text-gray-500 cursor-not-allowed" : "text-white hover:bg-purple-800"
+                    }`}
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 >
@@ -284,9 +309,8 @@ const MovieDetailPage = () => {
                 {[...Array(totalPages)].map((_, i) => (
                   <button
                     key={i + 1}
-                    className={`w-8 h-8 flex items-center justify-center rounded-full ${
-                      i + 1 === currentPage ? "bg-purple-700 hover:bg-purple-600" : "text-white hover:bg-purple-800"
-                    }`}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full ${i + 1 === currentPage ? "bg-purple-700 hover:bg-purple-600" : "text-white hover:bg-purple-800"
+                      }`}
                     onClick={() => setCurrentPage(i + 1)}
                   >
                     {i + 1}
@@ -294,9 +318,8 @@ const MovieDetailPage = () => {
                 ))}
 
                 <button
-                  className={`w-8 h-8 flex items-center justify-center rounded-full ${
-                    currentPage === totalPages ? "text-gray-500 cursor-not-allowed" : "text-white hover:bg-purple-800"
-                  }`}
+                  className={`w-8 h-8 flex items-center justify-center rounded-full ${currentPage === totalPages ? "text-gray-500 cursor-not-allowed" : "text-white hover:bg-purple-800"
+                    }`}
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                 >
