@@ -17,7 +17,7 @@ const MovieCard = ({ movie, variant = "default" }) => {
     <Link to={`/movies/${movie._id}`} className="block">
       <div className="relative group rounded-xl overflow-hidden bg-purple-800/50 hover:bg-purple-800 transition-all">
         <div className={`relative ${variant === "poster" ? "aspect-[2/3]" : "aspect-video"}`}>
-          <img src={movie.poster || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
+          <img src={`/images/${movie.poster || "/placeholder.svg"}`} alt={movie.title} className="w-full h-full object-cover" />
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { FiStar, FiThumbsUp, FiMessageSquare } from "react-icons/fi"
+import { FiStar, FiThumbsUp, FiThumbsDown , FiMessageSquare } from "react-icons/fi"
 import Header from "../components/Header"
 
 const TopReviewsPage = () => {
@@ -186,12 +186,16 @@ const TopReviewsPage = () => {
                       <div className="flex items-center gap-4">
                         <div className="flex items-center text-sm text-gray-400">
                           <FiThumbsUp className="w-4 h-4 mr-1" />
-                          {review.helpfulCount || 0}
+                          {review.likes.length || 0}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-400">
+                          <FiThumbsDown className="w-4 h-4 mr-1" />
+                          {review.dislikes.length || 0}
                         </div>
 
                         <div className="flex items-center text-sm text-gray-400">
                           <FiMessageSquare className="w-4 h-4 mr-1" />
-                          {review.commentCount || 0}
+                          {review.comments.length || 0}
                         </div>
                       </div>
                     </div>

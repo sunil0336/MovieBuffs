@@ -132,7 +132,7 @@ const MovieDetailPage = () => {
           {movie.backdrop && (
             <div className="absolute inset-0 w-full h-full">
               <img
-                src={movie.backdrop || "/placeholder.svg"}
+                src={`/images/${movie.backdrop || "/placeholder.svg"}`}
                 alt={movie.title}
                 className="w-full h-full object-cover opacity-20"
               />
@@ -152,7 +152,9 @@ const MovieDetailPage = () => {
               <div className="w-full md:w-1/3 lg:w-1/4">
                 <div className="aspect-[2/3] relative rounded-lg overflow-hidden">
                   <img
-                    src={movie.poster || "/placeholder.svg?height=450&width=300"}
+                    src={`/images/${movie.poster || "/placeholder.svg?height=450&width=300"}`}
+                    // <img src={`/images/action/${movie.imageName || "placeholder.svg"}`} alt={movie.title} />
+
                     alt={movie.title}
                     className="w-full h-full object-cover"
                   />
