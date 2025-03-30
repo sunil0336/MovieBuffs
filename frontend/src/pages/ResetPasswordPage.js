@@ -1,28 +1,22 @@
 "use client"
 
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Link, useParams, useNavigate } from "react-router-dom"
 import { FiEye, FiEyeOff, FiAlertCircle, FiCheck, FiX } from "react-icons/fi"
-import { useAuth } from "../contexts/AuthContext"
-import Header from "../components/Header"
+import api from "../services/api"
 
-const RegisterPage = () => {
+const ResetPasswordPage = () => {
+  const { token } = useParams()
   const navigate = useNavigate()
-  const { register, loading } = useAuth()
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    username: "",
     password: "",
     confirmPassword: "",
   })
   const [showPassword, setShowPassword] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const [tokenValid, setTokenValid] = useState(false)
+  const [tokenChecked, setTokenChecked] = useState(false)
 
   // Password validation
   const passwordValidation = {
@@ -36,40 +30,105 @@ const RegisterPage = () => {
 
   const isPasswordValid = Object.values(passwordValidation).every(Boolean)
 
+  // Verify token on component mount
+  useEffect(() => {
+    const verifyToken = async () => {
+      try {
+        await api.get(`/auth/reset-password/${token}`)
+        setTokenValid(true)
+      } catch (err) {
+        setError("Invalid or expired password reset token")
+        setTokenValid(false)
+      } finally {
+        setTokenChecked(true)
+      }
+    }
+
+    verifyToken()
+  }, [token])
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError("")
 
     if (!isPasswordValid) {
       setError("Please fix the password issues before continuing")
       return
     }
 
+    setIsSubmitting(true)
+    setError("")
+
     try {
-      await register({
-        name: formData.name,
-        email: formData.email,
-        username: formData.username,
+      await api.post(`/auth/reset-password/${token}`, {
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
       })
-      navigate("/")
-    } catch (error) {
-      setError(error.message)
+
+      // Redirect to login with success message
+      navigate("/login", {
+        state: {
+          message: "Password has been reset successfully. You can now log in with your new password.",
+        },
+      })
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to reset password. Please try again.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-purple-900 flex items-center justify-center px-4 py-12">
-      <div className="absolute top-0 left-0 w-full ">
-      <Header />
+  if (!tokenChecked) {
+    return (
+      <div className="min-h-screen bg-purple-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
       </div>
-      <div className="w-full max-w-md mt-6">
+    )
+  }
+
+  if (!tokenValid) {
+    return (
+      <div className="min-h-screen bg-purple-900 flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-purple-800 rounded-lg shadow-lg p-8 text-center">
+            <div className="text-center mb-8">
+              <Link to="/" className="text-2xl font-bold text-white">
+                Crictistaan
+              </Link>
+              <h1 className="text-xl font-semibold text-white mt-4">Reset Password</h1>
+            </div>
+
+            <div className="bg-red-900/50 border border-red-700 rounded-md p-3 mb-6 text-white">{error}</div>
+
+            <p className="text-white mb-6">
+              The password reset link is invalid or has expired. Please request a new password reset link.
+            </p>
+
+            <Link
+              to="/forgot-password"
+              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded inline-block"
+            >
+              Request New Link
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-purple-900 flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
         <div className="bg-purple-800 rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
             <Link to="/" className="text-2xl font-bold text-white">
               Crictistaan
             </Link>
-            <h1 className="text-xl font-semibold text-white mt-4">Create your account</h1>
+            <h1 className="text-xl font-semibold text-white mt-4">Reset Your Password</h1>
           </div>
 
           {error && (
@@ -81,60 +140,8 @@ const RegisterPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-white mb-1">
-                Full Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                required
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white"
-                placeholder="John Doe"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white"
-                placeholder="your@email.com"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-white mb-1">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                required
-                value={formData.username}
-                onChange={handleChange}
-                className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white"
-                placeholder="johndoe123"
-              />
-              <p className="text-xs text-gray-400 mt-1">Only letters, numbers, and underscores allowed</p>
-            </div>
-
-            <div>
               <label htmlFor="password" className="block text-sm font-medium text-white mb-1">
-                Password
+                New Password
               </label>
               <div className="relative">
                 <input
@@ -160,7 +167,7 @@ const RegisterPage = () => {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1">
-                Confirm Password
+                Confirm New Password
               </label>
               <input
                 id="confirmPassword"
@@ -225,7 +232,7 @@ const RegisterPage = () => {
                     <FiX className="w-4 h-4 text-red-500 mr-2" />
                   )}
                   <span className={passwordValidation.hasSpecial ? "text-green-400" : "text-gray-400"}>
-                    At least one special character
+                    At least one special charactert one special character
                   </span>
                 </li>
                 <li className="flex items-center">
@@ -244,15 +251,14 @@ const RegisterPage = () => {
             <button
               type="submit"
               className="w-full px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded"
-              disabled={loading || !isPasswordValid}
+              disabled={isSubmitting || !isPasswordValid}
             >
-              {loading ? "Creating account..." : "Create account"}
+              {isSubmitting ? "Resetting..." : "Reset Password"}
             </button>
 
             <div className="text-center text-sm text-gray-300">
-              Already have an account?{" "}
               <Link to="/login" className="text-yellow-400 hover:underline">
-                Sign in
+                Back to login
               </Link>
             </div>
           </form>
@@ -262,5 +268,5 @@ const RegisterPage = () => {
   )
 }
 
-export default RegisterPage
+export default ResetPasswordPage
 

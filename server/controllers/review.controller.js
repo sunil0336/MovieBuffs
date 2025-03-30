@@ -1,5 +1,6 @@
 const Review = require("../models/Review")
 const Movie = require("../models/Movie")
+const mongoose = require("mongoose")
 
 // @desc    Get all reviews
 // @route   GET /api/reviews
@@ -23,6 +24,9 @@ exports.getReviews = async (req, res, next) => {
         break
       case "mostHelpful":
         sortOptions = { helpfulCount: -1 }
+        break
+      case "mostLiked":
+        sortOptions = { "likes.length": -1 }
         break
       default:
         sortOptions = { createdAt: -1 } // newest
@@ -74,6 +78,32 @@ exports.getTopReviews = async (req, res, next) => {
       success: true,
       count: reviews.length,
       reviews,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Get single review
+// @route   GET /api/reviews/:id
+// @access  Public
+exports.getReview = async (req, res, next) => {
+  try {
+    const review = await Review.findById(req.params.id)
+      .populate("userId", "name username profileImage")
+      .populate("movieId", "title year poster")
+      .populate("comments.user", "name username profileImage")
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        error: "Review not found",
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      review,
     })
   } catch (error) {
     next(error)
@@ -132,6 +162,315 @@ exports.createReview = async (req, res, next) => {
     res.status(201).json({
       success: true,
       review,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Update review
+// @route   PUT /api/reviews/:id
+// @access  Private
+exports.updateReview = async (req, res, next) => {
+  try {
+    const { rating, title, content, containsSpoilers } = req.body
+
+    // Find review
+    let review = await Review.findById(req.params.id)
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        error: "Review not found",
+      })
+    }
+
+    // Check if user owns the review
+    if (review.userId.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        error: "Not authorized to update this review",
+      })
+    }
+
+    // Update review
+    review = await Review.findByIdAndUpdate(
+      req.params.id,
+      {
+        rating: Number.parseInt(rating),
+        title,
+        content,
+        containsSpoilers: !!containsSpoilers,
+      },
+      { new: true, runValidators: true },
+    ).populate("userId", "name username profileImage")
+
+    // Update movie rating
+    const movieId = review.movieId
+    const allReviews = await Review.find({ movieId })
+    const totalRating = allReviews.reduce((sum, review) => sum + review.rating, 0)
+    const averageRating = totalRating / allReviews.length
+
+    await Movie.findByIdAndUpdate(movieId, { rating: averageRating })
+
+    res.status(200).json({
+      success: true,
+      review,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Delete review
+// @route   DELETE /api/reviews/:id
+// @access  Private
+exports.deleteReview = async (req, res, next) => {
+  try {
+    // Find review
+    const review = await Review.findById(req.params.id)
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        error: "Review not found",
+      })
+    }
+
+    // Check if user owns the review or is admin
+    if (review.userId.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        error: "Not authorized to delete this review",
+      })
+    }
+
+    // Get movie ID before deleting review
+    const movieId = review.movieId
+
+    // Delete review
+    await review.deleteOne()
+
+    // Update movie rating
+    const allReviews = await Review.find({ movieId })
+
+    if (allReviews.length > 0) {
+      const totalRating = allReviews.reduce((sum, review) => sum + review.rating, 0)
+      const averageRating = totalRating / allReviews.length
+      await Movie.findByIdAndUpdate(movieId, { rating: averageRating })
+    } else {
+      // No reviews left, reset rating to 0
+      await Movie.findByIdAndUpdate(movieId, { rating: 0 })
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Review deleted successfully",
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Like review
+// @route   PUT /api/reviews/:id/like
+// @access  Private
+exports.likeReview = async (req, res, next) => {
+  try {
+    const review = await Review.findById(req.params.id)
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        error: "Review not found",
+      })
+    }
+
+    // Check if review has already been liked by user
+    if (review.likes.includes(req.user.id)) {
+      // Remove like
+      review.likes = review.likes.filter((like) => like.toString() !== req.user.id)
+    } else {
+      // Add like
+      review.likes.push(req.user.id)
+
+      // Remove from dislikes if present
+      review.dislikes = review.dislikes.filter((dislike) => dislike.toString() !== req.user.id)
+    }
+
+    await review.save()
+
+    res.status(200).json({
+      success: true,
+      likes: review.likes.length,
+      dislikes: review.dislikes.length,
+      userLiked: review.likes.includes(req.user.id),
+      userDisliked: review.dislikes.includes(req.user.id),
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Dislike review
+// @route   PUT /api/reviews/:id/dislike
+// @access  Private
+exports.dislikeReview = async (req, res, next) => {
+  try {
+    const review = await Review.findById(req.params.id)
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        error: "Review not found",
+      })
+    }
+
+    // Check if review has already been disliked by user
+    if (review.dislikes.includes(req.user.id)) {
+      // Remove dislike
+      review.dislikes = review.dislikes.filter((dislike) => dislike.toString() !== req.user.id)
+    } else {
+      // Add dislike
+      review.dislikes.push(req.user.id)
+
+      // Remove from likes if present
+      review.likes = review.likes.filter((like) => like.toString() !== req.user.id)
+    }
+
+    await review.save()
+
+    res.status(200).json({
+      success: true,
+      likes: review.likes.length,
+      dislikes: review.dislikes.length,
+      userLiked: review.likes.includes(req.user.id),
+      userDisliked: review.dislikes.includes(req.user.id),
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Add comment to review
+// @route   POST /api/reviews/:id/comments
+// @access  Private
+exports.addComment = async (req, res, next) => {
+  try {
+    const { text } = req.body
+
+    if (!text) {
+      return res.status(400).json({
+        success: false,
+        error: "Comment text is required",
+      })
+    }
+
+    const review = await Review.findById(req.params.id)
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        error: "Review not found",
+      })
+    }
+
+    // Add comment
+    const newComment = {
+      user: req.user.id,
+      text,
+    }
+
+    review.comments.unshift(newComment)
+    await review.save()
+
+    // Populate user data in the new comment
+    await review.populate("comments.user", "name username profileImage")
+
+    res.status(201).json({
+      success: true,
+      comments: review.comments,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Delete comment from review
+// @route   DELETE /api/reviews/:id/comments/:commentId
+// @access  Private
+exports.deleteComment = async (req, res, next) => {
+  try {
+    const review = await Review.findById(req.params.id)
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        error: "Review not found",
+      })
+    }
+
+    // Find comment
+    const comment = review.comments.find((comment) => comment._id.toString() === req.params.commentId)
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        error: "Comment not found",
+      })
+    }
+
+    // Check if user is comment owner or admin
+    if (comment.user.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        error: "Not authorized to delete this comment",
+      })
+    }
+
+    // Remove comment
+    review.comments = review.comments.filter((comment) => comment._id.toString() !== req.params.commentId)
+
+    await review.save()
+
+    res.status(200).json({
+      success: true,
+      comments: review.comments,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Get user reviews
+// @route   GET /api/reviews/user/:userId
+// @access  Public
+exports.getUserReviews = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10 } = req.query
+
+    // Pagination
+    const skip = (Number.parseInt(page) - 1) * Number.parseInt(limit)
+
+    // Execute query with population
+    const reviews = await Review.find({ userId: req.params.userId })
+      .populate("movieId", "title year poster")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number.parseInt(limit))
+
+    // Get total count
+    const total = await Review.countDocuments({ userId: req.params.userId })
+
+    res.status(200).json({
+      success: true,
+      count: reviews.length,
+      pagination: {
+        total,
+        page: Number.parseInt(page),
+        pages: Math.ceil(total / Number.parseInt(limit)),
+      },
+      reviews,
     })
   } catch (error) {
     next(error)

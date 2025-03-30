@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { FiEye, FiEyeOff, FiAlertCircle } from "react-icons/fi"
 import { useAuth } from "../contexts/AuthContext"
+import Header from "../components/Header"
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -38,6 +39,9 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-purple-900 flex items-center justify-center px-4">
+      <div className="absolute top-0 left-0 w-full ">
+      <Header />
+      </div>
       <div className="w-full max-w-md">
         <div className="bg-purple-800 rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
