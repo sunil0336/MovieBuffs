@@ -99,7 +99,7 @@ const HomePage = () => {
         </div>
 
         {renderMovieSection("Critics Top Rated", topRatedMovies, "top-rated")}
-        {renderMovieSection("Movies in Theatres", inTheatresMovies, "in-theatres")}
+        {renderMovieSection("In Cinemas Near You", inTheatresMovies, "in-theatres")}
         {renderMovieSection("Coming Soon to Theaters", comingSoonMovies, "coming-soon")}
         {renderMovieSection("Explore Upcoming Movies", upcomingMovies, "upcoming")}
       </main>
