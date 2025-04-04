@@ -6,6 +6,8 @@ import { FiTrash, FiEye, FiSearch, FiFilter, FiX } from "react-icons/fi"
 import AdminLayout from "../../components/admin/AdminLayout"
 import api from "../../services/api"
 import { formatDate } from "../../utils/formatters"
+import { useCallback } from "react";
+
 
 const AdminReviewsPage = () => {
   const [reviews, setReviews] = useState([])
@@ -22,34 +24,36 @@ const AdminReviewsPage = () => {
     sort: "newest",
   })
 
-  const fetchReviews = async (page = 1) => {
-    try {
-      setLoading(true)
 
-      let queryParams = `page=${page}&limit=10`
-      if (filters.search) queryParams += `&search=${filters.search}`
-      if (filters.minRating) queryParams += `&minRating=${filters.minRating}`
-      if (filters.sort) queryParams += `&sort=${filters.sort}`
+const fetchReviews = useCallback(async (page = 1) => {
+  try {
+    setLoading(true);
 
-      const res = await api.get(`/admin/reviews?${queryParams}`)
+    let queryParams = `page=${page}&limit=10`;
+    if (filters.search) queryParams += `&search=${filters.search}`;
+    if (filters.minRating) queryParams += `&minRating=${filters.minRating}`;
+    if (filters.sort) queryParams += `&sort=${filters.sort}`;
 
-      setReviews(res.data.reviews)
-      setPagination({
-        page: res.data.pagination.page,
-        pages: res.data.pagination.pages,
-        total: res.data.pagination.total,
-      })
-    } catch (err) {
-      setError("Failed to load reviews")
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
+    const res = await api.get(`/admin/reviews?${queryParams}`);
+
+    setReviews(res.data.reviews);
+    setPagination({
+      page: res.data.pagination.page,
+      pages: res.data.pagination.pages,
+      total: res.data.pagination.total,
+    });
+  } catch (err) {
+    setError("Failed to load reviews");
+    console.error(err);
+  } finally {
+    setLoading(false);
   }
+}, [filters]); // 👈 include `filters` if used inside
 
   useEffect(() => {
-    fetchReviews()
-  }, [])
+    fetchReviews();
+  }, [fetchReviews]); // ✅ warning goes away
+  
 
   const handlePageChange = (newPage) => {
     fetchReviews(newPage)
@@ -212,22 +216,30 @@ const AdminReviewsPage = () => {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center">
-                      {review.userId && review.userId.profileImage ? (
-
-                          <img
-                            src={review.userId.profileImage || "/placeholder.svg"}
-                            // alt={review.userId.name}
-                            alt="User Avatar"
-                            className="w-8 h-8 rounded-full mr-2"
-                          />
+                        {/* ✅ Check if userId exists first to avoid null error */}
+                        {review.userId ? (
+                          review.userId.profileImage ? (
+                            <img
+                              src={review.userId.profileImage}
+                              alt={review.userId.name}
+                              className="w-8 h-8 rounded-full mr-2"
+                            />
+                          ) : (
+                            // ✅ If no profile image, show fallback circle with initial
+                            <div className="w-8 h-8 rounded-full bg-purple-600 mr-2 flex items-center justify-center">
+                              {review.userId.name?.charAt(0) || "?"}
+                            </div>
+                          )
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-purple-600 mr-2 flex items-center justify-center">
-                            {/* {review.userId.name.charAt(0)} */}jj
-{/* ////////////////////////////////////////////////////////////// */}
+                          // ✅ If userId is null, show generic fallback
+                          <div className="w-8 h-8 rounded-full bg-gray-500 mr-2 flex items-center justify-center">
+                            ?
                           </div>
                         )}
-                        <span>{/*review.userId.name*/}ha</span>
+                        {/* ✅ Display username or 'Unknown' if userId is missing */}
+                        <span>{review.userId?.name || "Unknown"}</span>
                       </div>
+
                     </td>
                     <td className="p-4">
                       <div className="flex items-center text-yellow-400">{review.rating} / 5</div>

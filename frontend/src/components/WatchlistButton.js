@@ -66,4 +66,3 @@ const WatchlistButton = ({ movieId }) => {
 }
 
 export default WatchlistButton
-

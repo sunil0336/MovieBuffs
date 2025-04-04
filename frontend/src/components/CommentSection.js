@@ -128,4 +128,3 @@ const CommentSection = ({ comments, onAddComment, onDeleteComment, currentUserId
 }
 
 export default CommentSection
-
