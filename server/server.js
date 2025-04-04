@@ -12,6 +12,7 @@ const reviewRoutes = require("./routes/review.routes")
 const userRoutes = require("./routes/user.routes")
 const shareRoutes = require('./routes/share.routes');
 const adminRoutes = require("./routes/admin.routes")
+const newsRoutes = require("./routes/news.Routes");
 
 
 // Create Express app
@@ -36,6 +37,8 @@ app.use("/api/users", userRoutes)
 app.use('/api/share', shareRoutes);
 app.use('/api/users', userRoutes);
 app.use("/api/admin", adminRoutes)
+app.use("/api/news", newsRoutes);
+
 
 
 // Error handling middleware
@@ -63,4 +66,8 @@ mongoose
     console.error("MongoDB connection error:", err)
     process.exit(1)
   })
+
+
+
+
 

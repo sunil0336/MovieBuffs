@@ -5,6 +5,7 @@ import { Link } from "react-router-dom"
 import { FiChevronRight } from "react-icons/fi"
 import Header from "../components/Header"
 import MovieCard from "../components/MovieCard"
+import NewsList from "../components/NewsList"
 
 const HomePage = () => {
   const [topRatedMovies, setTopRatedMovies] = useState([])
@@ -81,7 +82,8 @@ const HomePage = () => {
       <Header />
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section - Placeholder */}
-        <div className="relative mt-6 mb-12 rounded-xl overflow-hidden">
+        
+        {/* <div className="relative mt-6 mb-12 rounded-xl overflow-hidden">
           <div className="aspect-[21/9] relative bg-purple-800">
             <img
               src="/images/interstellar_movie-wide.jpg?height=600&width=1400"
@@ -96,7 +98,9 @@ const HomePage = () => {
               <p className="text-purple-200 mb-4">Interstellar Re-releases in India on February 7</p>
             </div>
           </div>
-        </div>
+        </div> */}
+
+        <NewsList />
 
         {renderMovieSection("Critics Top Rated", topRatedMovies, "top-rated")}
         {renderMovieSection("In Cinemas Near You", inTheatresMovies, "in-theatres")}
