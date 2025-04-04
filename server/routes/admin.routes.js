@@ -20,4 +20,3 @@ router.get("/reviews", getReviews)
 router.get("/users", getUsers)
 
 module.exports = router
-

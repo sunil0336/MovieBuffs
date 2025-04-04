@@ -82,4 +82,3 @@ const ReviewSchema = new mongoose.Schema(
 ReviewSchema.index({ movieId: 1, userId: 1 }, { unique: true })
 
 module.exports = mongoose.model("Review", ReviewSchema)
-
