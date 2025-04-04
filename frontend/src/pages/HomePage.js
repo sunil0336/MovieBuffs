@@ -84,7 +84,7 @@ const HomePage = () => {
         <div className="relative mt-6 mb-12 rounded-xl overflow-hidden">
           <div className="aspect-[21/9] relative bg-purple-800">
             <img
-              src="/placeholder.svg?height=600&width=1400"
+              src="/images/interstellar_movie-wide.jpg?height=600&width=1400"
               alt="Featured movie"
               className="w-full h-full object-cover"
             />
@@ -103,7 +103,7 @@ const HomePage = () => {
         {renderMovieSection("Coming Soon to Theaters", comingSoonMovies, "coming-soon")}
         {renderMovieSection("Explore Upcoming Movies", upcomingMovies, "upcoming")}
       </main>
-      <footer className="py-6 text-center text-white/60">© 2024 Crictistaan. All rights reserved.</footer>
+      <footer className="py-6 text-center text-white/60">© 2024 Crictistaan. All rights reserved. Made by Sunil ❤️</footer>
     </div>
   )
 }

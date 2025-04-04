@@ -73,8 +73,10 @@ const ProfilePage = () => {
               </div>
 
               <button className="px-4 py-2 border border-white text-white hover:bg-purple-800 rounded flex items-center gap-2">
-                <FiEdit2 className="w-4 h-4" />
-                Edit profile
+                <Link to="/profile/edit" className="flex items-center gap-2">
+                  <FiEdit2 className="w-4 h-4" />
+                  Edit profile
+                </Link>
               </button>
             </div>
           </div>
@@ -126,7 +128,7 @@ const ProfilePage = () => {
                         <div className="flex items-center gap-1">
                           <FiStar className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                           <span className="font-bold">{review.rating}</span>
-                          <span className="text-gray-400">/10</span>
+                          <span className="text-gray-400">/ 5</span>
                         </div>
                       </div>
 

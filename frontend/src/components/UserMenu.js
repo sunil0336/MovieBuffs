@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { FiUser, FiLogOut, FiSettings, FiHeart, FiClock } from "react-icons/fi"
+import { FiUser, FiLogOut, FiHeart } from "react-icons/fi"
 import { useAuth } from "../contexts/AuthContext"
 
 const UserMenu = () => {
@@ -84,23 +84,23 @@ const UserMenu = () => {
                   Watchlist
                 </Link>
 
-                <Link
+                {/* <Link
                   to="/history"
                   className="flex items-center px-4 py-2 text-sm text-white hover:bg-purple-800"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <FiClock className="mr-3 h-4 w-4 text-purple-300" />
                   Watch History
-                </Link>
+                </Link> */}
 
-                <Link
+                {/* <Link
                   to="/settings"
                   className="flex items-center px-4 py-2 text-sm text-white hover:bg-purple-800"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <FiSettings className="mr-3 h-4 w-4 text-purple-300" />
                   Settings
-                </Link>
+                </Link> */}
 
                 <div className="border-t border-purple-800 mt-1">
                   <button
