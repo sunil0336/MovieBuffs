@@ -12,22 +12,25 @@ const HomePage = () => {
   const [inTheatresMovies, setInTheatresMovies] = useState([])
   const [comingSoonMovies, setComingSoonMovies] = useState([])
   const [upcomingMovies, setUpcomingMovies] = useState([])
+  const [fansFavourites, setFansFavourites] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const [topRated, inTheatres, comingSoon, upcoming] = await Promise.all([
+        const [topRated, inTheatres, comingSoon, upcoming, fansFavourites] = await Promise.all([
           fetch(`${process.env.REACT_APP_API_URL}/movies?category=top-rated&limit=4`).then((res) => res.json()),
           fetch(`${process.env.REACT_APP_API_URL}/movies?category=in-theatres&limit=4`).then((res) => res.json()),
           fetch(`${process.env.REACT_APP_API_URL}/movies?category=coming-soon&limit=4`).then((res) => res.json()),
           fetch(`${process.env.REACT_APP_API_URL}/movies?category=upcoming&limit=4`).then((res) => res.json()),
+          fetch(`${process.env.REACT_APP_API_URL}/movies?category=fans-favourites&limit=4`).then((res) => res.json()),
         ])
 
         setTopRatedMovies(topRated.movies || [])
         setInTheatresMovies(inTheatres.movies || [])
         setComingSoonMovies(comingSoon.movies || [])
         setUpcomingMovies(upcoming.movies || [])
+        setFansFavourites(fansFavourites.movies || []) 
       } catch (error) {
         console.error("Error fetching movies:", error)
       } finally {
@@ -104,8 +107,10 @@ const HomePage = () => {
 
         {renderMovieSection("Critics Top Rated", topRatedMovies, "top-rated")}
         {renderMovieSection("In Cinemas Near You", inTheatresMovies, "in-theatres")}
-        {renderMovieSection("Coming Soon to Theaters", comingSoonMovies, "coming-soon")}
-        {renderMovieSection("Explore Upcoming Movies", upcomingMovies, "upcoming")}
+        {renderMovieSection("Future Releases", comingSoonMovies, "coming-soon")}
+        {renderMovieSection("In Theatres Soon", upcomingMovies, "upcoming")}
+        {renderMovieSection("Fans' Favourites", fansFavourites, "fans-favourites")}
+        
       </main>
       <footer className="py-6 text-center text-white/60">© 2024 Crictistaan. All rights reserved. Made by Sunil ❤️</footer>
     </div>
