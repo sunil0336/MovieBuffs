@@ -21,7 +21,7 @@ const MovieCard = ({ movie, variant = "default" }) => {
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-          <div className="absolute top-2 right-2 z-10">
+          <div className="absolute top-2 right-2 z-5">
             <button
               onClick={toggleBookmark}
               className="w-8 h-8 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-purple-700 transition-colors"

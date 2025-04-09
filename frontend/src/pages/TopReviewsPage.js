@@ -9,9 +9,9 @@ const TopReviewsPage = () => {
   const [topReviews, setTopReviews] = useState([])
   const [recentReviews, setRecentReviews] = useState([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [searchResults, setSearchResults] = useState([])
-  const [isSearching, setIsSearching] = useState(false)
+  // const [searchTerm, setSearchTerm] = useState("")
+  // const [searchResults, setSearchResults] = useState([])
+  // const [isSearching, setIsSearching] = useState(false)
   const [activeTab, setActiveTab] = useState("top")
 
   useEffect(() => {
@@ -37,22 +37,22 @@ const TopReviewsPage = () => {
     fetchReviews()
   }, [])
 
-  const handleSearch = async (e) => {
-    e.preventDefault()
+  // const handleSearch = async (e) => {
+  //   e.preventDefault()
 
-    if (!searchTerm.trim()) return
+  //   if (!searchTerm.trim()) return
 
-    setIsSearching(true)
-    try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/movies/search?q=${encodeURIComponent(searchTerm)}`)
-      const data = await res.json()
-      setSearchResults(data.movies || [])
-    } catch (error) {
-      console.error("Error searching movies:", error)
-    } finally {
-      setIsSearching(false)
-    }
-  }
+  //   setIsSearching(true)
+  //   try {
+  //     const res = await fetch(`${process.env.REACT_APP_API_URL}/movies/search?q=${encodeURIComponent(searchTerm)}`)
+  //     const data = await res.json()
+  //     setSearchResults(data.movies || [])
+  //   } catch (error) {
+  //     console.error("Error searching movies:", error)
+  //   } finally {
+  //     setIsSearching(false)
+  //   }
+  // }
 
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" }
@@ -65,7 +65,7 @@ const TopReviewsPage = () => {
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Top Reviews</h1>
 
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <form onSubmit={handleSearch} className="flex gap-2 max-w-xl">
             <input
               type="search"
@@ -106,7 +106,7 @@ const TopReviewsPage = () => {
               ))}
             </div>
           )}
-        </div>
+        </div> */}
 
         <div className="mb-6 border-b border-purple-800">
           <div className="flex">
@@ -168,7 +168,7 @@ const TopReviewsPage = () => {
                         {[...Array(5)].map((_, i) => (
                           <FiStar
                             key={i}
-                            className={`w-4 h-4 ${i < Math.round(review.rating / 2) ? "text-yellow-400 fill-yellow-400" : "text-gray-500"}`}
+                            className={`w-4 h-4 ${i < Math.round(review.rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-500"}`}
                           />
                         ))}
                       </div>
