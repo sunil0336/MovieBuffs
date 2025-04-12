@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { FiHome, FiFilm, FiStar, FiUsers, FiSettings, FiMenu, FiX, FiLogOut } from "react-icons/fi"
+import { FiHome, FiFilm, FiStar, FiUsers, FiSettings, FiMenu, FiX, FiLogOut, FiFileText } from "react-icons/fi"
 import { useAuth } from "../../contexts/AuthContext"
 
 const AdminLayout = ({ children }) => {
@@ -20,6 +20,8 @@ const AdminLayout = ({ children }) => {
   const navItems = [
     { path: "/admin", icon: <FiHome className="w-5 h-5" />, label: "Dashboard" },
     { path: "/admin/movies", icon: <FiFilm className="w-5 h-5" />, label: "Movies" },
+    { path: "/admin/tv-shows", icon: <FiFilm className="w-5 h-5" />, label: "TV Shows" },
+    { path: "/admin/news", icon: <FiFileText className="w-5 h-5" />, label: "News" },
     { path: "/admin/reviews", icon: <FiStar className="w-5 h-5" />, label: "Reviews" },
     { path: "/admin/users", icon: <FiUsers className="w-5 h-5" />, label: "Users" },
     { path: "/admin/settings", icon: <FiSettings className="w-5 h-5" />, label: "Settings" },
@@ -168,4 +170,3 @@ const AdminLayout = ({ children }) => {
 }
 
 export default AdminLayout
-

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { FiStar, FiThumbsUp, FiThumbsDown , FiMessageSquare } from "react-icons/fi"
+import { FiStar, FiThumbsUp, FiThumbsDown, FiMessageSquare } from "react-icons/fi"
 import Header from "../components/Header"
 
 const TopReviewsPage = () => {
@@ -143,66 +143,80 @@ const TopReviewsPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {(activeTab === "top" ? topReviews : recentReviews).map((review) => (
-              <div key={review._id} className="bg-purple-800/50 rounded-lg p-6">
-                <div className="flex gap-4">
-                  <Link to={`/movies/${review.movieId._id}`} className="flex-shrink-0">
-                    <div className="w-16 h-24 bg-purple-800 rounded overflow-hidden">
-                      {review.movieId?.poster && (
-                        <img
-                          src={review.movieId.poster || "/placeholder.svg"}
-                          alt={review.movieId.title}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </div>
-                  </Link>
-
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <Link to={`/movies/${review.movieId._id}`} className="hover:text-yellow-400">
-                        <h3 className="text-lg font-medium">{review.movieId?.title || "Unknown Movie"}</h3>
-                      </Link>
-
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <FiStar
-                            key={i}
-                            className={`w-4 h-4 ${i < Math.round(review.rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-500"}`}
+            {(activeTab === "top" ? topReviews : recentReviews).map((review) =>
+              review.movieId ? (
+                <div key={review._id} className="bg-purple-800/50 rounded-lg p-6">
+                  <div className="flex gap-4">
+                    <Link to={`/movies/${review.movieId?._id}`} className="flex-shrink-0">
+                      <div className="w-16 h-24 bg-purple-800 rounded overflow-hidden">
+                        {review.movieId?.poster && (
+                          <img
+                            src={review.movieId.poster || "/placeholder.svg"}
+                            alt={review.movieId.title}
+                            className="w-full h-full object-cover"
                           />
-                        ))}
+                        )}
                       </div>
-                    </div>
+                    </Link>
 
-                    <h4 className="font-medium mb-2">{review.title}</h4>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <Link
+                          to={`/movies/${review.movieId?._id}`}
+                          className="hover:text-yellow-400"
+                        >
+                          <h3 className="text-lg font-medium">
+                            {review.movieId?.title || "Unknown Movie"}
+                          </h3>
+                        </Link>
 
-                    <p className="text-sm text-gray-300 mb-4 line-clamp-3">{review.content}</p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-400">
-                        By {review.userId?.name || "Anonymous"} • {formatDate(review.createdAt)}
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <FiStar
+                              key={i}
+                              className={`w-4 h-4 ${i < Math.round(review.rating)
+                                  ? "text-yellow-400 fill-yellow-400"
+                                  : "text-gray-500"
+                                }`}
+                            />
+                          ))}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center text-sm text-gray-400">
-                          <FiThumbsUp className="w-4 h-4 mr-1" />
-                          {review.likes.length || 0}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-400">
-                          <FiThumbsDown className="w-4 h-4 mr-1" />
-                          {review.dislikes.length || 0}
+                      <h4 className="font-medium mb-2">{review.title}</h4>
+
+                      <p className="text-sm text-gray-300 mb-4 line-clamp-3">
+                        {review.content}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-400">
+                          By {review.userId?.name || "Anonymous"} •{" "}
+                          {formatDate(review.createdAt)}
                         </div>
 
-                        <div className="flex items-center text-sm text-gray-400">
-                          <FiMessageSquare className="w-4 h-4 mr-1" />
-                          {review.comments.length || 0}
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center text-sm text-gray-400">
+                            <FiThumbsUp className="w-4 h-4 mr-1" />
+                            {review.likes.length || 0}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-400">
+                            <FiThumbsDown className="w-4 h-4 mr-1" />
+                            {review.dislikes.length || 0}
+                          </div>
+
+                          <div className="flex items-center text-sm text-gray-400">
+                            <FiMessageSquare className="w-4 h-4 mr-1" />
+                            {review.comments.length || 0}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ) : null
+            )}
+
 
             {(activeTab === "top" ? topReviews : recentReviews).length === 0 && (
               <div className="text-center py-12 text-gray-400">No reviews found</div>

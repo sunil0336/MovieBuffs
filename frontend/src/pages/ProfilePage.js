@@ -104,49 +104,58 @@ const ProfilePage = () => {
             </div>
           ) : userReviews.length > 0 ? (
             <div className="space-y-6">
-              {userReviews.map((review) => (
-                <div key={review._id} className="bg-purple-800/50 rounded-lg p-6">
-                  <div className="flex gap-4">
-                    <Link to={`/movies/${review.movieId._id}`} className="flex-shrink-0">
-                      <div className="w-16 h-24 bg-purple-800 rounded overflow-hidden">
-                        {review.movieId?.poster && (
-                          <img
-                            src={review.movieId.poster || "/placeholder.svg"}
-                            alt={review.movieId.title}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-                    </Link>
-
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <Link to={`/movies/${review.movieId._id}`} className="hover:text-yellow-400">
-                          <h3 className="text-lg font-medium">{review.movieId?.title || "Unknown Movie"}</h3>
-                        </Link>
-
-                        <div className="flex items-center gap-1">
-                          <FiStar className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                          <span className="font-bold">{review.rating}</span>
-                          <span className="text-gray-400">/ 5</span>
+              {userReviews.map((review) =>
+                review.movieId ? (
+                  <div key={review._id} className="bg-purple-800/50 rounded-lg p-6">
+                    <div className="flex gap-4">
+                      <Link to={`/movies/${review.movieId._id}`} className="flex-shrink-0">
+                        <div className="w-16 h-24 bg-purple-800 rounded overflow-hidden">
+                          {review.movieId?.poster && (
+                            <img
+                              src={review.movieId.poster || "/placeholder.svg"}
+                              alt={review.movieId.title}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
                         </div>
-                      </div>
+                      </Link>
 
-                      <h4 className="font-medium mb-2">{review.title}</h4>
-                      <p className="text-sm text-gray-300 mb-2">{review.content}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <Link
+                            to={`/movies/${review.movieId._id}`}
+                            className="hover:text-yellow-400"
+                          >
+                            <h3 className="text-lg font-medium">
+                              {review.movieId?.title || "Unknown Movie"}
+                            </h3>
+                          </Link>
 
-                      <div className="flex justify-between items-center text-sm text-gray-400">
-                        <span>{new Date(review.createdAt).toLocaleDateString()}</span>
-                        <div className="flex items-center gap-4">
-                          <span>{review.helpfulCount || 0} helpful</span>
-                          <button className="text-yellow-400 hover:underline">Edit</button>
-                          <button className="text-red-400 hover:underline">Delete</button>
+                          <div className="flex items-center gap-1">
+                            <FiStar className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                            <span className="font-bold">{review.rating}</span>
+                            <span className="text-gray-400">/ 5</span>
+                          </div>
+                        </div>
+
+                        <h4 className="font-medium mb-2">{review.title}</h4>
+                        <p className="text-sm text-gray-300 mb-2">{review.content}</p>
+
+                        <div className="flex justify-between items-center text-sm text-gray-400">
+                          <span>{new Date(review.createdAt).toLocaleDateString()}</span>
+                          <div className="flex items-center gap-4">
+                            <span>{review.likes.length || 0} likes</span>
+                            <span>{review.dislikes.length || 0} dislikes</span>
+                            <button className="text-yellow-400 hover:underline">Edit</button>
+                            <button className="text-red-400 hover:underline">Delete</button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ) : null
+              )}
+
             </div>
           ) : (
             <div className="bg-purple-800/50 rounded-lg p-8 text-center">

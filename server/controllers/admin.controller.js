@@ -38,12 +38,24 @@ exports.getDashboardStats = async (req, res, next) => {
 
     // Combine review counts with movie data
     const mostReviewedMovies = reviewCounts.map((item) => {
-      const movieData = mostReviewedMoviesData.find((movie) => movie._id.toString() === item._id.toString())
+      const movieData = mostReviewedMoviesData.find(
+        (movie) => movie._id.toString() === item._id.toString()
+      )
+    
+      if (!movieData) {
+        return {
+          _id: item._id,
+          reviewCount: item.reviewCount,
+          message: 'Movie not found',
+        }
+      }
+    
       return {
         ...movieData.toObject(),
         reviewCount: item.reviewCount,
       }
     })
+    
 
     res.status(200).json({
       success: true,

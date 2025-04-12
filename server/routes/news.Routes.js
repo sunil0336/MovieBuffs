@@ -1,10 +1,17 @@
 const express = require("express")
-const { getLatestNews } = require("../controllers/news.Controller.js");
+// const { getNews, getSingleNews, createNews, updateNews, deleteNews } = require("../controllers/news.controller")
+const { getNews, getSingleNews, createNews, updateNews, deleteNews } = require("../controllers/news.Controller")
+const { protect, authorize } = require("../middleware/auth")
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/latest", getLatestNews);
+// Public routes
+router.get("/", getNews)
+router.get("/:id", getSingleNews)
 
-// export default router;
+// Admin routes
+router.post("/", protect, authorize("admin"), createNews)
+router.put("/:id", protect, authorize("admin"), updateNews)
+router.delete("/:id", protect, authorize("admin"), deleteNews)
+
 module.exports = router
-

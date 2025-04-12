@@ -210,10 +210,15 @@ const fetchReviews = useCallback(async (page = 1) => {
                       </div>
                     </td>
                     <td className="p-4">
-                      <Link to={`/movies/${review.movieId._id}`} className="hover:text-yellow-400">
-                        {review.movieId.title}
-                      </Link>
-                    </td>
+  {review.movieId ? (
+    <Link to={`/movies/${review.movieId._id}`} className="hover:text-yellow-400">
+      {review.movieId.title}
+    </Link>
+  ) : (
+    <span className="text-gray-400 italic">Movie Deleted</span>
+  )}
+</td>
+
                     <td className="p-4">
                       <div className="flex items-center">
                         {/* ✅ Check if userId exists first to avoid null error */}

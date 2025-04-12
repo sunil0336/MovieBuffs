@@ -1,17 +1,33 @@
 const mongoose = require("mongoose");
 
-const newsSchema = new mongoose.Schema({
-  title: String,
-  subtitle: String,
-  description: String,
-  author: String, // 👈 added author
-  image: String, // 👈 added image
-  createdAt: {
-    type: Date,
-    default: Date.now,
+const NewsSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: [true, "Title is required"],
+      trim: true,
+    },
+    subtitle: {
+      type: String,
+      required: [true, "Subtitle is required"],
+      trim: true,
+    },
+    description: {
+      type: String,
+      required: [true, "Description is required"],
+    },
+    author: {
+      type: String,
+      required: [true, "Author is required"],
+    },
+    image: {
+      type: String,
+      default: "/placeholder.svg",
+    },
   },
-});
+  {
+    timestamps: true, // ⏱️ Auto adds createdAt & updatedAt
+  }
+);
 
-const News = mongoose.model("News", newsSchema);
-
-module.exports = News; // ✅ Use CommonJS export
+module.exports = mongoose.model("News", NewsSchema);

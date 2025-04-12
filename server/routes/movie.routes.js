@@ -5,6 +5,9 @@ const {
   getMovieReviews,
   getFilterOptions,
   searchMovies,
+  createMovie,
+  updateMovie,
+  deleteMovie,
 } = require("../controllers/movie.controller")
 
 const router = express.Router()
@@ -24,5 +27,12 @@ router.get("/:id", getMovie)
 // Get movie reviews
 router.get("/:id/reviews", getMovieReviews)
 
-module.exports = router
+// Add the auth middleware
+const { protect, authorize } = require("../middleware/auth")
 
+// Admin routes
+router.post("/", protect, authorize("admin"), createMovie)
+router.put("/:id", protect, authorize("admin"), updateMovie)
+router.delete("/:id", protect, authorize("admin"), deleteMovie)
+
+module.exports = router

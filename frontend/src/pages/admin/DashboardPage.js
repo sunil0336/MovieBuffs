@@ -110,7 +110,8 @@ const DashboardPage = () => {
                   </div>
                   <div className="flex items-center text-yellow-400">
                     <FiStar className="w-4 h-4 mr-1" />
-                    <span>{movie.rating.toFixed(1)}</span>
+                    <span>{(movie.rating ?? 0).toFixed(1)}</span>
+
                   </div>
                 </Link>
               ))}

@@ -1,66 +1,99 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { FiBookmark } from "react-icons/fi"
-import { useAuth } from "../contexts/AuthContext"
+import { useState, useEffect, useContext } from "react"
+import { useNavigate } from "react-router-dom"
+import { FiBookmark, FiCheck } from "react-icons/fi"
+import { AuthContext } from "../contexts/AuthContext"
 import api from "../services/api"
 
-const WatchlistButton = ({ movieId }) => {
-  const { user } = useAuth()
+const WatchlistButton = ({ movieId, tvShowId }) => {
+  const { user, isAuthenticated } = useContext(AuthContext)
+  const navigate = useNavigate()
   const [isInWatchlist, setIsInWatchlist] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
-    const checkWatchlist = async () => {
-      if (!user || !movieId) return
-
-      try {
-        const res = await api.get(`/users/watchlist/${movieId}/check`)
-        setIsInWatchlist(res.data.isInWatchlist)
-      } catch (error) {
-        console.error("Error checking watchlist:", error)
-      }
+    if (isAuthenticated && user) {
+      checkWatchlistStatus()
+    } else {
+      setLoading(false)
     }
+  }, [isAuthenticated, user, movieId, tvShowId])
 
-    checkWatchlist()
-  }, [user, movieId])
+  const checkWatchlistStatus = async () => {
+    setLoading(true)
+    try {
+      const endpoint = "/users/watchlist/check"
+      const params = {}
 
-  const handleToggleWatchlist = async (e) => {
-    e.preventDefault()
-    e.stopPropagation()
+      if (movieId) {
+        params.movieId = movieId
+      } else if (tvShowId) {
+        params.tvShowId = tvShowId
+      }
 
-    if (!user) {
-      // Redirect to login or show login modal
+      const res = await api.get(endpoint, { params })
+      setIsInWatchlist(res.data.isInWatchlist)
+    } catch (error) {
+      console.error("Error checking watchlist status:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const toggleWatchlist = async () => {
+    if (!isAuthenticated) {
+      navigate("/login")
       return
     }
 
-    setIsLoading(true)
-
+    setUpdating(true)
     try {
-      if (isInWatchlist) {
-        await api.delete(`/users/watchlist/${movieId}`)
-      } else {
-        await api.put(`/users/watchlist/${movieId}`)
+      const endpoint = isInWatchlist ? "/users/watchlist/remove" : "/users/watchlist/add"
+      const data = {}
+
+      if (movieId) {
+        data.movieId = movieId
+      } else if (tvShowId) {
+        data.tvShowId = tvShowId
       }
 
+      await api.post(endpoint, data)
       setIsInWatchlist(!isInWatchlist)
     } catch (error) {
       console.error("Error updating watchlist:", error)
     } finally {
-      setIsLoading(false)
+      setUpdating(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <button
+        disabled
+        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-800 rounded-lg opacity-50"
+      >
+        <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div>
+        Loading...
+      </button>
+    )
   }
 
   return (
     <button
-      onClick={handleToggleWatchlist}
-      disabled={isLoading}
-      className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-        isInWatchlist ? "bg-yellow-500 hover:bg-yellow-600" : "bg-black/40 backdrop-blur-sm hover:bg-purple-700"
-      }`}
-      title={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+      onClick={toggleWatchlist}
+      disabled={updating}
+      className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+        isInWatchlist ? "bg-green-600 hover:bg-green-700" : "bg-yellow-500 hover:bg-yellow-600 text-black"
+      } ${updating ? "opacity-50" : ""}`}
     >
-      <FiBookmark className={`w-4 h-4 ${isInWatchlist ? "text-black fill-black" : "text-white"}`} />
+      {updating ? (
+        <div className="animate-spin h-4 w-4 border-2 border-current rounded-full border-t-transparent"></div>
+      ) : isInWatchlist ? (
+        <FiCheck className="w-4 h-4" />
+      ) : (
+        <FiBookmark className="w-4 h-4" />
+      )}
+      {isInWatchlist ? "In Watchlist" : "Add to Watchlist"}
     </button>
   )
 }
