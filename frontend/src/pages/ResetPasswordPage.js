@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { FiEye, FiEyeOff, FiAlertCircle, FiCheck, FiX } from "react-icons/fi"
