@@ -12,7 +12,6 @@ import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
 import ProfilePage from "./pages/ProfilePage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
-import ResetPasswordPage from "./pages/ResetPasswordPage"
 import EditProfilePage from "./pages/EditProfilePage"
 import WatchlistPage from "./pages/WatchlistPage"
 import AdminDashboardPage from "./pages/admin/DashboardPage"
@@ -43,8 +42,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-          <Route path="/ppp" element={<ResetPasswordPage />} />
+          
 
           {/* Protected routes */}
           <Route
