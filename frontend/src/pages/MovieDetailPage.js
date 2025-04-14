@@ -6,6 +6,7 @@ import { FiStar, FiShare, FiChevronLeft, FiChevronRight,FiPlay } from "react-ico
 import Header from "../components/Header"
 import ReviewCard from "../components/ReviewCard"
 import ReviewForm from "../components/ReviewForm"
+import MovieRecommendations from "../components/MovieRecommendations"
 
 const MovieDetailPage = () => {
   const { id } = useParams()
@@ -362,6 +363,7 @@ const MovieDetailPage = () => {
               </button>
             </div>
           )}
+          <MovieRecommendations movieId={id} genres={movie.genres} />
         </div>
       </div>
     </div>

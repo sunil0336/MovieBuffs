@@ -10,6 +10,8 @@ const {
   deleteMovie,
 } = require("../controllers/movie.controller")
 
+const { getRecommendations } = require("../controllers/rec.controller")
+
 const router = express.Router()
 
 // Get all movies
@@ -26,6 +28,9 @@ router.get("/:id", getMovie)
 
 // Get movie reviews
 router.get("/:id/reviews", getMovieReviews)
+
+router.get("/recommendations/:movieId", getRecommendations)
+
 
 // Add the auth middleware
 const { protect, authorize } = require("../middleware/auth")
