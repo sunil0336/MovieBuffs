@@ -14,6 +14,12 @@ const shareRoutes = require('./routes/share.routes');
 const adminRoutes = require("./routes/admin.routes")
 const newsRoutes = require("./routes/news.Routes");
 
+const tvShowRoutes = require("./routes/tvshow.routes")
+const tvshowReviewRoutes = require("./routes/tvshowreview.routes") // UPDATED: Added TV show review routes
+// const errorHandler = require("./middleware/error")
+
+
+
 
 // Create Express app
 const app = express()
@@ -38,6 +44,12 @@ app.use('/api/share', shareRoutes);
 app.use('/api/users', userRoutes);
 app.use("/api/admin", adminRoutes)
 app.use("/api/news", newsRoutes);
+
+app.use("/api/tvshows", tvShowRoutes)
+app.use("/api/tvshowreviews", tvshowReviewRoutes) // UPDATED: Added TV show review routes
+// app.use(errorHandler)
+
+
 
 
 

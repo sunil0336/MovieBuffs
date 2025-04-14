@@ -6,13 +6,13 @@ const NewsList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [isHovered, setIsHovered] = useState(false); // ✅ Used to control pause/resume on hover
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         const fetchNews = async () => {
             try {
                 const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-                const apiUrl = `${baseUrl}/news/latest?limit=5`; // ✅ You can change limit to get more news
+                const apiUrl = `${baseUrl}/news?limit=5`;  
 
                 const res = await fetch(apiUrl);
                 if (!res.ok) throw new Error("Failed to fetch news");
@@ -20,7 +20,7 @@ const NewsList = () => {
                 const data = await res.json();
                 console.log("News Data:", data); // Debug log
 
-                setNews(Array.isArray(data) ? data : [data]); // ✅ Ensure it's always an array
+                setNews(Array.isArray(data.news) ? data.news : []); // ✅ Ensure it's always an array
             } catch (err) {
                 setError(err.message);
             } finally {

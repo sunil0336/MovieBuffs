@@ -208,3 +208,77 @@ exports.searchMovies = async (req, res, next) => {
   }
 }
 
+// Add these controller methods at the end of the file
+
+// @desc    Create movie
+// @route   POST /api/movies
+// @access  Private/Admin
+exports.createMovie = async (req, res, next) => {
+  try {
+    const movie = await Movie.create(req.body)
+
+    res.status(201).json({
+      success: true,
+      movie,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Update movie
+// @route   PUT /api/movies/:id
+// @access  Private/Admin
+exports.updateMovie = async (req, res, next) => {
+  try {
+    let movie = await Movie.findById(req.params.id)
+
+    if (!movie) {
+      return res.status(404).json({
+        success: false,
+        error: "Movie not found",
+      })
+    }
+
+    movie = await Movie.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    })
+
+    res.status(200).json({
+      success: true,
+      movie,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// @desc    Delete movie
+// @route   DELETE /api/movies/:id
+// @access  Private/Admin
+exports.deleteMovie = async (req, res, next) => {
+  try {
+    const movie = await Movie.findById(req.params.id)
+
+    if (!movie) {
+      return res.status(404).json({
+        success: false,
+        error: "Movie not found",
+      })
+    }
+
+    // Delete associated reviews
+    await Review.deleteMany({ movieId: req.params.id })
+
+    // Delete the movie
+    await movie.deleteOne()
+
+    res.status(200).json({
+      success: true,
+      data: {},
+    })
+  } catch (error) {
+    next(error)
+  }
+}

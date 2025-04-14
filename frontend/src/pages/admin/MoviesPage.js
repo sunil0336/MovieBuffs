@@ -25,7 +25,7 @@ const MoviesPage = () => {
   })
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 7,
     total: 0,
     pages: 0,
   })
@@ -343,7 +343,7 @@ const MoviesPage = () => {
                       <td className="p-3">
                         <div className="flex items-center">
                           <FiStar className="w-4 h-4 text-yellow-400 fill-yellow-400 mr-1" />
-                          <span>{movie.rating.toFixed(1)}</span>
+                          <span>{movie.rating ? movie.rating.toFixed(1) : 'No Rating yet'}</span>
                         </div>
                       </td>
                       <td className="p-3">

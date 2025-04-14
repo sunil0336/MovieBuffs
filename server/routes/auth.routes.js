@@ -5,9 +5,9 @@ const {
   login,
   logout,
   getCurrentUser,
-  forgotPassword,
+  sendOTP,
   resetPassword,
-  verifyResetToken,
+  resetPasswordWithOTP,
 } = require("../controllers/auth.controller")
 const { protect } = require("../middleware/auth")
 
@@ -56,35 +56,25 @@ router.post("/logout", logout)
 router.get("/me", protect, getCurrentUser)
 
 // Forgot password
-router.post("/forgot-password", [body("email").isEmail().withMessage("Please include a valid email")], forgotPassword)
-
-// Verify reset token
-router.get("/reset-password/:token", verifyResetToken)
-
-// Reset password
+// @route POST /api/auth/forgot-password
 router.post(
-  "/reset-password/:token",
-  [
-    body("password")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long")
-      .matches(/[A-Z]/)
-      .withMessage("Password must contain at least one uppercase letter")
-      .matches(/[a-z]/)
-      .withMessage("Password must contain at least one lowercase letter")
-      .matches(/[0-9]/)
-      .withMessage("Password must contain at least one number")
-      .matches(/[^A-Za-z0-9]/)
-      .withMessage("Password must contain at least one special character"),
-    body("confirmPassword").custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error("Password confirmation does not match password")
-      }
-      return true
-    }),
-  ],
-  resetPassword,
+  "/forgot-password",
+  [body("email").isEmail().withMessage("Please enter a valid email")],
+  sendOTP
 )
+
+// @route POST /api/auth/reset-password
+router.post(
+  "/reset-password",
+  [
+    body("email").isEmail().withMessage("Valid email required"),
+    body("otp").notEmpty().withMessage("OTP is required"),
+    body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters long"),
+  ],
+  resetPasswordWithOTP
+)
+
+
 
 module.exports = router
 

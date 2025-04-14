@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import StarRating from "./StarRating"
 
-const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
+const TvShowReviewForm = ({ tvShowId, tvShowTitle, onReviewAdded }) => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [rating, setRating] = useState(0)
@@ -33,19 +33,13 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
     setError("")
 
     try {
-      // UPDATED: Determine the endpoint based on whether it's a movie or TV show review
-      const endpoint = tvShowId
-        ? `${process.env.REACT_APP_API_URL}/tvshowreviews`
-        : `${process.env.REACT_APP_API_URL}/reviews`
-
-      const response = await fetch(endpoint, {
+      // Use the new TV show review endpoint
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/tvshows/${tvShowId}/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          movieId,
-          tvShowId, // UPDATED: Added tvShowId to the request body
           rating,
           title,
           content,
@@ -66,7 +60,7 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
         onReviewAdded(data.review)
       }
     } catch (error) {
-      console.error("Error submitting review:", error)
+      console.error("Error submitting TV show review:", error)
       setError(error.message || "Failed to submit review. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -85,7 +79,7 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
   if (!user) {
     return (
       <div className="bg-purple-800/50 rounded-lg p-8 text-center">
-        <h3 className="text-xl font-medium mb-4">Sign in to review</h3>
+        <h3 className="text-xl font-medium mb-4">Sign in to review this TV show</h3>
         <p className="text-gray-300 mb-6">You need to be logged in to submit a review.</p>
         <div className="flex justify-center gap-4">
           <button
@@ -109,7 +103,9 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
     return (
       <div className="bg-purple-800/50 rounded-lg p-8 text-center">
         <h3 className="text-xl font-medium mb-4">Thank you for your review!</h3>
-        <p className="text-gray-300 mb-6">Your review has been submitted and will be visible after moderation.</p>
+        <p className="text-gray-300 mb-6">
+          Your TV show review has been submitted and will be visible after moderation.
+        </p>
         <button onClick={resetForm} className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded">
           Write another review
         </button>
@@ -119,14 +115,14 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
 
   return (
     <div className="bg-purple-800/50 rounded-lg p-6">
-      <h3 className="text-xl font-medium mb-6">Review "{movieTitle}"</h3>
+      <h3 className="text-xl font-medium mb-6">Review TV Show: "{tvShowTitle}"</h3>
 
       {error && <div className="bg-red-900/50 border border-red-700 rounded-md p-3 mb-4 text-white">{error}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium mb-2">Your Rating</label>
-          <StarRating initialRating={rating} onRatingChange={setRating} maxRating={5} />
+          <StarRating initialRating={rating} onRatingChange={setRating} maxRating={10} />
         </div>
 
         <div>
@@ -137,7 +133,7 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
             id="review-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Summarize your thoughts"
+            placeholder="Summarize your thoughts about this TV show"
             className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white placeholder:text-gray-400"
             required
           />
@@ -151,7 +147,7 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
             id="review-content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your review here..."
+            placeholder="What did you think about the story, acting, and production? Would you recommend this show?"
             className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white placeholder:text-gray-400 min-h-[150px]"
             required
           />
@@ -176,7 +172,7 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
             className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black rounded"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Submitting..." : "Submit Review"}
+            {isSubmitting ? "Submitting..." : "Submit TV Show Review"}
           </button>
         </div>
       </form>
@@ -184,4 +180,4 @@ const ReviewForm = ({ movieId, movieTitle, onReviewAdded, tvShowId }) => {
   )
 }
 
-export default ReviewForm
+export default TvShowReviewForm

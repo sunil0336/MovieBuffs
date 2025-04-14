@@ -1,8 +1,7 @@
 const User = require("../models/User")
 const { generateToken } = require("../utils/jwt")
 const { validationResult } = require("express-validator")
-const crypto = require("crypto")
-const sendEmail = require("../utils/email")
+const bcrypt = require("bcryptjs")
 
 // Set cookie options
 const cookieOptions = {
@@ -174,151 +173,102 @@ exports.getCurrentUser = async (req, res, next) => {
   }
 }
 
-// @desc    Forgot password
+/////////////////////////////
+
+// Generate 6-digit OTP
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
+
+// @desc    Send OTP
 // @route   POST /api/auth/forgot-password
 // @access  Public
-exports.forgotPassword = async (req, res, next) => {
+exports.sendOTP = async (req, res, next) => {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array(),
-      })
+      return res.status(400).json({ success: false, errors: errors.array() })
     }
 
     const { email } = req.body
-
-    // Find user by email
     const user = await User.findOne({ email })
+
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: "User with that email does not exist",
-      })
+      return res.status(404).json({ success: false, error: "User not found" })
     }
 
-    // Generate reset token
-    const resetToken = user.getResetPasswordToken()
-    await user.save({ validateBeforeSave: false })
+    const otp = generateOTP()
+    const otpExpire = Date.now() + 10 * 60 * 1000 // 10 mins
 
-    // Create reset URL
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`
+    user.otp = otp
+    user.otpExpire = otpExpire
+    await user.save()
 
-    // Create email message
-    const message = `
-      You are receiving this email because you (or someone else) has requested the reset of a password.
-      Please click on the following link to reset your password:
-      \n\n${resetUrl}\n\n
-      This link will expire in 10 minutes.
-      If you did not request this, please ignore this email and your password will remain unchanged.
-    `
+    console.log(`Generated OTP for ${email}:`, otp)
 
-    try {
-      await sendEmail({
-        email: user.email,
-        subject: "Password Reset Token",
-        message,
-      })
-
-      res.status(200).json({
-        success: true,
-        message: "Email sent",
-      })
-    } catch (error) {
-      user.resetPasswordToken = undefined
-      user.resetPasswordExpire = undefined
-
-      await user.save({ validateBeforeSave: false })
-
-      return res.status(500).json({
-        success: false,
-        error: "Email could not be sent",
-      })
-    }
+    res.status(200).json({ success: true, message: "OTP generated. Check console for testing." })
   } catch (error) {
     next(error)
   }
 }
 
-// @desc    Verify reset token
-// @route   GET /api/auth/reset-password/:token
+// @desc    Verify OTP and reset password
+// @route   POST /api/auth/reset-password
 // @access  Public
-exports.verifyResetToken = async (req, res, next) => {
+exports.resetPasswordWithOTP = async (req, res, next) => {
   try {
-    // Get hashed token
-    const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex")
-
-    // Find user by token
-    const user = await User.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() },
-    })
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid or expired token",
-      })
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() })
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Token is valid",
-    })
+    const { email, otp, password } = req.body
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" })
+    }
+
+    if (!user.otp || user.otpExpire < Date.now() || user.otp !== otp) {
+      return res.status(400).json({ success: false, error: "Invalid or expired OTP" })
+    }
+
+    user.password = password
+    user.otp = undefined
+    user.otpExpire = undefined
+
+    await user.save()
+
+    res.status(200).json({ success: true, message: "Password reset successful" })
   } catch (error) {
     next(error)
   }
 }
+
+
+
+// exports.forgotPassword = async (req, res, next) => {
+//   const { email } = req.body;
+//   const user = await User.findOne({ email });
+
+//   if (!user) {
+//     return res.status(404).json({ success: false, error: "User not found" });
+//   }
+
+//   // Generate 6-digit OTP
+//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+//   user.otp = otp;
+//   user.otpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+//   await user.save();
+
+//   console.log("OTP for password reset:", otp);
+
+//   res.status(200).json({
+//     success: true,
+//     message: "OTP has been generated and logged to the server.",
+//   });
+// };
+
 
 // @desc    Reset password
 // @route   POST /api/auth/reset-password/:token
 // @access  Public
-exports.resetPassword = async (req, res, next) => {
-  try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array(),
-      })
-    }
-
-    // Get hashed token
-    const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex")
-
-    // Find user by token
-    const user = await User.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() },
-    })
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid or expired token",
-      })
-    }
-
-    // Set new password
-    user.password = req.body.password
-    user.resetPasswordToken = undefined
-    user.resetPasswordExpire = undefined
-
-    await user.save()
-
-    // Generate token
-    const token = generateToken(user)
-
-    // Set cookie and send response
-    res.cookie("token", token, cookieOptions)
-
-    res.status(200).json({
-      success: true,
-      message: "Password reset successful",
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
