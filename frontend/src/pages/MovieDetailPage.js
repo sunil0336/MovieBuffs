@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { FiStar, FiShare, FiChevronLeft, FiChevronRight } from "react-icons/fi"
+import { FiStar, FiShare, FiChevronLeft, FiChevronRight,FiPlay } from "react-icons/fi"
 import Header from "../components/Header"
 import ReviewCard from "../components/ReviewCard"
 import ReviewForm from "../components/ReviewForm"
@@ -17,6 +17,7 @@ const MovieDetailPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [showTrailerDialog, setShowTrailerDialog] = useState(false)
   const [filterOptions, setFilterOptions] = useState({
     sort: "newest",
     minRating: 0,
@@ -228,10 +229,31 @@ const MovieDetailPage = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  <button className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded">
-                    Watch Trailer
+                  <button
+                    onClick={() => setShowTrailerDialog(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded">
+                    <FiPlay className="w-5 h-5" /> Watch Trailer
                   </button>
-
+                  {showTrailerDialog && (
+                  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+                    <div className="relative w-full max-w-4xl">
+                      <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${movie.trailer.split("v=")[1]}`}
+                          title={`${movie.title} Trailer`}
+                          className="w-full h-full"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                      <button
+                        onClick={() => setShowTrailerDialog(false)}
+                        className="absolute -top-10 right-0 text-white hover:text-gray-300"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                   <button className="px-4 py-2 border border-white text-white hover:bg-purple-800 rounded"
                     onClick={handleShareClick}

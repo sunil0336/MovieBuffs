@@ -4,7 +4,6 @@ import { FiStar, FiCalendar, FiClock, FiFilm, FiUsers, FiPlay } from "react-icon
 import Header from "../components/Header"
 import TvShowReviewForm from "../components/TvShowReviewForm"
 import ReviewForm from "../components/ReviewForm"
-import ReviewCard from "../components/ReviewCard"
 import WatchlistButton from "../components/WatchlistButton"
 import api from "../services/api"
 
