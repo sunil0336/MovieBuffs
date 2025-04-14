@@ -10,24 +10,27 @@ import NewsList from "../components/NewsList"
 const HomePage = () => {
   const [topRatedMovies, setTopRatedMovies] = useState([])
   const [inTheatresMovies, setInTheatresMovies] = useState([])
-  const [comingSoonMovies, setComingSoonMovies] = useState([])
+  const [futurereleasesMovies, setFuturereleasesMoviesMovies] = useState([])
   const [upcomingMovies, setUpcomingMovies] = useState([])
+  const [fansFavourites, setFansFavourites] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const [topRated, inTheatres, comingSoon, upcoming] = await Promise.all([
+        const [topRated, inTheatres, futurereleases, upcoming, fansFavourites] = await Promise.all([
           fetch(`${process.env.REACT_APP_API_URL}/movies?sort=rating&limit=4`).then((res) => res.json()),
           fetch(`${process.env.REACT_APP_API_URL}/movies?category=in-theatres&limit=4`).then((res) => res.json()),
-          fetch(`${process.env.REACT_APP_API_URL}/movies?category=coming-soon&limit=4`).then((res) => res.json()),
+          fetch(`${process.env.REACT_APP_API_URL}/movies?category=futurereleases&limit=4`).then((res) => res.json()),
           fetch(`${process.env.REACT_APP_API_URL}/movies?category=upcoming&limit=4`).then((res) => res.json()),
+          fetch(`${process.env.REACT_APP_API_URL}/movies?category=fans-favourites&limit=4`).then((res) => res.json()),
         ])
 
         setTopRatedMovies(topRated.movies || [])
         setInTheatresMovies(inTheatres.movies || [])
-        setComingSoonMovies(comingSoon.movies || [])
+        setFuturereleasesMoviesMovies(futurereleases.movies || [])
         setUpcomingMovies(upcoming.movies || [])
+        setFansFavourites(fansFavourites.movies || [])
       } catch (error) {
         console.error("Error fetching movies:", error)
       } finally {
@@ -83,9 +86,10 @@ const HomePage = () => {
       <main className="container mx-auto px-4 py-8">
         <NewsList />
         {renderMovieSection("Critics Top Rated", topRatedMovies, "top-rated")}
-        {renderMovieSection("In Cinemas Near You", inTheatresMovies, "in-theatres")}
-        {renderMovieSection("Coming Soon to Theaters", comingSoonMovies, "coming-soon")}
+        {renderMovieSection("In Theatres", inTheatresMovies, "in-theatres")}
+        {renderMovieSection("Future Releases", futurereleasesMovies, "futurereleases")}
         {renderMovieSection("Explore Upcoming Movies", upcomingMovies, "upcoming")}
+        {renderMovieSection("Fans' Favourites", fansFavourites, "fans-favourites")}
       </main>
       <footer className="py-6 text-center text-white/60">© 2024 Crictistaan. All rights reserved. Made by Sunil ❤️</footer>
     </div>

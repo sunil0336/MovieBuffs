@@ -83,7 +83,7 @@ const TvShowsPage = () => {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <h1 className="text-3xl font-bold mb-4 md:mb-0">TV Shows</h1>
+          <h1 className="text-2xl font-bold">TV Shows</h1>
 
           <button
             onClick={toggleFilters}
@@ -117,25 +117,17 @@ const TvShowsPage = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {[...Array(12)].map((_, index) => (
               <div key={index} className="bg-purple-800/50 rounded-lg aspect-[2/3] animate-pulse"></div>
             ))}
           </div>
         ) : tvShows.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {tvShows.map((tvShow) => (
-                <Link key={tvShow._id} to={`/tv-shows/${tvShow._id}`}>
-                  {/* <MovieCard
-                    title={tvShow.title}
-                    poster={tvShow.poster}
-                    year={new Date(tvShow.firstAirDate).getFullYear()}
-                    rating={tvShow.rating}
-                    type="tv"
-                  /> */}
-                  <TvShowCard tvshow={tvShow} />
-                </Link>
+                  <TvShowCard key={tvShow._id} tvshow={tvShow} variant="poster"/>
+                
               ))}
             </div>
 

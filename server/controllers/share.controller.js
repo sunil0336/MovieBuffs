@@ -111,9 +111,9 @@ exports.shareReview = async (req, res, next) => {
 
     // Draw movie poster
     try {
-      const posterPath = review.movieId.poster.startsWith("/")
-        ? path.join(__dirname, "..", "public", review.movieId.poster)
-        : review.movieId.poster
+      const posterPath =  path.join(__dirname, "..", "..", "frontend", "public", review.movieId.poster)
+
+      // const posterPath = "../frontend/public/images/Animal.jpg";
 
       const image = await loadImage(posterPath)
       ctx.drawImage(image, 50, 100, 150, 225)
