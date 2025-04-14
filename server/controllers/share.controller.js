@@ -51,7 +51,7 @@ exports.shareMovie = async (req, res, next) => {
 
     ctx.font = "20px Arial"
     ctx.fillText(`Year: ${movie.year}`, 300, 200)
-    ctx.fillText(`Rating: ${movie.rating.toFixed(1)}/10`, 300, 230)
+    ctx.fillText(`Rating: ${movie.rating.toFixed(1)}/ 5`, 300, 230)
     ctx.fillText(`Director: ${movie.director}`, 300, 260)
     ctx.fillText(`Language: ${movie.language}`, 300, 290)
 
@@ -137,7 +137,7 @@ exports.shareReview = async (req, res, next) => {
     // Draw rating
     ctx.fillStyle = "#facc15"
     ctx.font = "bold 36px Arial"
-    ctx.fillText(`${review.rating}/10`, 250, 200)
+    ctx.fillText(`${review.rating}/ 5`, 250, 200)
 
     // Draw review title
     ctx.fillStyle = "#ffffff"

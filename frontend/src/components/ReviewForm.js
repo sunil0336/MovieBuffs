@@ -1,110 +1,71 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import StarRating from "./StarRating"
 
-
-const ReviewForm = ({
-  review,
-  movieId,
-  tvShowId,
-  movieTitle,
-  onReviewAdded,
-  onReviewUpdated,
-  // onCancel,
-  // isEditing = false,
-  initialReview = {},
-})=> {
+const ReviewForm = ({ movieId, movieTitle, onReviewAdded }) => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [rating, setRating] = useState(initialReview?.rating || 0)
+  const [rating, setRating] = useState(0)
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [containsSpoilers, setContainsSpoilers] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
-  
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-  
+    e.preventDefault()
+
     if (!user) {
-      setError("You must be logged in to submit a review");
-      return;
+      setError("You must be logged in to submit a review")
+      return
     }
-  
+
     if (rating === 0) {
-      setError("Please select a rating");
-      return;
+      setError("Please select a rating")
+      return
     }
-  
-    setIsSubmitting(true);
-    setError("");
-  
+
+    setIsSubmitting(true)
+    setError("")
+
     try {
-      const isEditing = !!review?._id;
-  
-      // Determine base endpoint based on review type (movie or TV show)
-      const baseEndpoint = tvShowId
-        ? `${process.env.REACT_APP_API_URL}/tvshowreviews`
-        : `${process.env.REACT_APP_API_URL}/reviews`;
-  
-      const endpoint = isEditing
-        ? `${baseEndpoint}/${review._id}` // PUT for editing
-        : baseEndpoint; // POST for new review
-  
-      const method = isEditing ? "PUT" : "POST";
-  
-      const response = await fetch(endpoint, {
-        method,
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/reviews`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           movieId,
-          tvShowId,
           rating,
           title,
           content,
           containsSpoilers,
         }),
         credentials: "include",
-      });
-  
-      const data = await response.json();
-  
+      })
+
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error(data.error || "Failed to submit review");
+        throw new Error(data.error || "Failed to submit review")
       }
-  
-      setSubmitted(true);
-  
-      // Notify parent component
-      if (isEditing && onReviewUpdated) {
-        onReviewUpdated(data.review);
-      } else if (onReviewAdded) {
-        onReviewAdded(data.review);
+
+      setSubmitted(true)
+
+      if (onReviewAdded) {
+        onReviewAdded(data.review)
       }
     } catch (error) {
-      console.error("Error submitting review:", error);
-      setError(error.message || "Failed to submit review. Please try again.");
+      console.error("Error submitting review:", error)
+      setError(error.message || "Failed to submit review. Please try again.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
-  
-  useEffect(() => {
-    if (initialReview) {
-      setRating(initialReview.rating || 0);
-      setTitle(initialReview.title || "");
-      setContent(initialReview.content || "");
-      setContainsSpoilers(initialReview.containsSpoilers || false);
-    }
-  }, [initialReview]);
-  
+  }
 
   const resetForm = () => {
     setRating(0)

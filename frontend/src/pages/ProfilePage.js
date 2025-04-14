@@ -16,9 +16,18 @@ const ProfilePage = () => {
   const [activeReviewsTab, setActiveReviewsTab] = useState("movies")
   const [loading, setLoading] = useState(true)
   const [watchlistLoading, setWatchlistLoading] = useState(true)
-  const [editingReview, setEditingReview] = useState(null)
+  // const [editingReview, setEditingReview] = useState(null)
   const [reviews, setReviews] = useState([]); // ✅ Make sure it's an array, not null or undefined
 
+  // States for the review form
+  const [rating, setRating] = useState(0);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [containsSpoilers, setContainsSpoilers] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [editingReview, setEditingReview] = useState(null);
 
 
   useEffect(() => {
@@ -29,73 +38,204 @@ const ProfilePage = () => {
   }, [user])
 
   const fetchUserReviews = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      // UPDATED: Fetch both movie and TV show reviews
       const [movieReviewsRes, tvShowReviewsRes] = await Promise.all([
         api.get(`/reviews/user/${user.id}`),
         api.get(`/tvshowreviews/user/${user.id}`),
-      ])
+      ]);
 
       setUserReviews({
         movies: movieReviewsRes.data.reviews || [],
         tvShows: tvShowReviewsRes.data.reviews || [],
-      })
+      });
     } catch (error) {
-      console.error("Error fetching user reviews:", error)
+      console.error("Error fetching user reviews:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleEditReview = (review) => {
-    setEditingReview(review)
-  }
+    setEditingReview(review);
+  };
 
   const handleReviewUpdated = (updatedReview) => {
-    setReviews((prevReviews) =>
-      (Array.isArray(prevReviews) ? prevReviews : []).map((r) =>
-        r._id === updatedReview._id ? updatedReview : r
-      )
+    // Example logic: replace updated review in your review list
+    setReviews((prev) =>
+      prev.map((r) => (r._id === updatedReview._id ? updatedReview : r))
     );
-    setEditingReview(null); // close the form after updating
+  };
+  const handleReviewSubmit = async (e, movieId, tvShowId) => {
+    e.preventDefault();
+    if (rating === 0) {
+      setError("Please select a rating");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const baseEndpoint = tvShowId
+        ? `${process.env.REACT_APP_API_URL}/tvshowreviews`
+        : `${process.env.REACT_APP_API_URL}/reviews`;
+
+      const endpoint = editingReview
+        ? `${baseEndpoint}/${editingReview._id}`
+        : baseEndpoint;
+
+      const method = editingReview ? "PUT" : "POST";
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          movieId,
+          tvShowId,
+          rating,
+          title,
+          content,
+          containsSpoilers,
+        }),
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit review");
+      }
+
+      setSubmitted(true);
+      if (editingReview) {
+        setReviews((prevReviews) =>
+          prevReviews.map((r) =>
+            r._id === data.review._id ? data.review : r
+          )
+        );
+      } else {
+        setReviews((prevReviews) => [...prevReviews, data.review]);
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      setError(error.message || "Failed to submit review. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setRating(0);
+    setTitle("");
+    setContent("");
+    setContainsSpoilers(false);
+    setSubmitted(false);
+    setError("");
+    setEditingReview(null);
   };
 
   const fetchWatchlist = async () => {
-    setWatchlistLoading(true)
+    setWatchlistLoading(true);
     try {
-      const res = await api.get("/users/watchlist")
+      const res = await api.get("/users/watchlist");
       setWatchlist({
         movies: res.data.movies || [],
         tvShows: res.data.tvShows || [],
-      })
+      });
     } catch (error) {
-      console.error("Error fetching watchlist:", error)
+      console.error("Error fetching watchlist:", error);
     } finally {
-      setWatchlistLoading(false)
+      setWatchlistLoading(false);
     }
-  }
+  };
 
   const removeFromWatchlist = async (id, type) => {
     try {
-      await api.delete(`/users/watchlist/${id}`)
-
-      // Update local state
+      await api.delete(`/users/watchlist/${id}`);
       if (type === "movie") {
         setWatchlist({
           ...watchlist,
           movies: watchlist.movies.filter((movie) => movie._id !== id),
-        })
+        });
       } else {
         setWatchlist({
           ...watchlist,
           tvShows: watchlist.tvShows.filter((tvShow) => tvShow._id !== id),
-        })
+        });
       }
     } catch (error) {
-      console.error("Error removing from watchlist:", error)
+      console.error("Error removing from watchlist:", error);
     }
-  }
+  };
+
+  // const renderReviewForm = (movieId, tvShowId, movieTitle) => (
+  //   <div className="bg-purple-800/50 rounded-lg p-6">
+  //     <h3 className="text-xl font-medium mb-6">Review "{movieTitle || 'TV Show'}"</h3>
+
+  //     {error && <div className="bg-red-900/50 border border-red-700 rounded-md p-3 mb-4 text-white">{error}</div>}
+
+  //     <form onSubmit={(e) => handleReviewSubmit(e, movieId, tvShowId)} className="space-y-6">
+  //       <div>
+  //         <label className="block text-sm font-medium mb-2">Your Rating</label>
+  //         <StarRating initialRating={rating} onRatingChange={setRating} maxRating={5} />
+  //       </div>
+
+  //       <div>
+  //         <label htmlFor="review-title" className="block text-sm font-medium mb-2">
+  //           Review Title
+  //         </label>
+  //         <input
+  //           id="review-title"
+  //           value={title}
+  //           onChange={(e) => setTitle(e.target.value)}
+  //           placeholder="Summarize your thoughts"
+  //           className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white placeholder:text-gray-400"
+  //           required
+  //         />
+  //       </div>
+
+  //       <div>
+  //         <label htmlFor="review-content" className="block text-sm font-medium mb-2">
+  //           Your Review
+  //         </label>
+  //         <textarea
+  //           id="review-content"
+  //           value={content}
+  //           onChange={(e) => setContent(e.target.value)}
+  //           placeholder="Write your review here..."
+  //           className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white placeholder:text-gray-400 min-h-[150px]"
+  //           required
+  //         />
+  //       </div>
+
+  //       <div className="flex items-center gap-2">
+  //         <input
+  //           type="checkbox"
+  //           id="contains-spoilers"
+  //           checked={containsSpoilers}
+  //           onChange={(e) => setContainsSpoilers(e.target.checked)}
+  //           className="rounded bg-transparent border-gray-600"
+  //         />
+  //         <label htmlFor="contains-spoilers" className="text-sm">
+  //           This review contains spoilers
+  //         </label>
+  //       </div>
+
+  //       <div className="flex justify-end">
+  //         <button
+  //           type="submit"
+  //           className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black rounded"
+  //           disabled={isSubmitting}
+  //         >
+  //           {isSubmitting ? "Submitting..." : "Submit Review"}
+  //         </button>
+  //       </div>
+  //     </form>
+  //   </div>
+  // );
 
   if (!user) {
     return (
@@ -139,7 +279,7 @@ const ProfilePage = () => {
               <Link to={contentLink} className="hover:text-yellow-400">
                 <h3 className="text-lg font-medium">{contentTitle || "Unknown Title"}</h3>
               </Link>
-              
+
               <div className="flex items-center gap-1">
                 <FiStar className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                 <span className="font-bold">{review.rating}</span>
@@ -166,16 +306,109 @@ const ProfilePage = () => {
                     </button>
                   </div>
 
-                  <ReviewForm
-                    review={editingReview}
-                    movieId={editingReview.movieId?._id}
-                    tvShowId={editingReview.tvShowId?._id}
-                    movieTitle={editingReview.movieId?.title || editingReview.tvShowId?.title}
-                    initialReview={editingReview}
-                    onReviewAdded={handleReviewUpdated}
-                  // onCancel={() => setEditingReview(null)}
-                  // isEditing={true}
-                  />
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const { _id, movieId, tvShowId } = editingReview;
+
+                      try {
+                        const endpoint = tvShowId
+                          ? `${process.env.REACT_APP_API_URL}/tvshowreviews/${_id}`
+                          : `${process.env.REACT_APP_API_URL}/reviews/${_id}`;
+
+                        const response = await fetch(endpoint, {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            rating: editingReview.rating,
+                            title: editingReview.title,
+                            content: editingReview.content,
+                            containsSpoilers: editingReview.containsSpoilers,
+                          }),
+                          credentials: "include",
+                        });
+
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || "Update failed");
+
+                        if (handleReviewUpdated) {
+                          handleReviewUpdated(data.review);
+                        }
+                        setEditingReview(null);
+
+                      } catch (error) {
+                        alert(error.message);
+                      }
+                    }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Rating</label>
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, index) => (
+                          <FiStar
+                            key={index}
+                            onClick={() =>
+                              setEditingReview((prev) => ({ ...prev, rating: index + 1 }))
+                            }
+                            className={`w-5 h-5 cursor-pointer ${index < editingReview.rating
+                                ? "text-yellow-400 fill-yellow-400"
+                                : "text-gray-500"
+                              }`}
+                          />
+                        ))}
+                        <span className="ml-2 text-sm text-white">{editingReview.rating} / 5</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Review Title</label>
+                      <input
+                        type="text"
+                        value={editingReview.title}
+                        onChange={(e) =>
+                          setEditingReview((prev) => ({ ...prev, title: e.target.value }))
+                        }
+                        className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Review Content</label>
+                      <textarea
+                        value={editingReview.content}
+                        onChange={(e) =>
+                          setEditingReview((prev) => ({ ...prev, content: e.target.value }))
+                        }
+                        className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white min-h-[120px]"
+                        required
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={editingReview.containsSpoilers}
+                        onChange={(e) =>
+                          setEditingReview((prev) => ({
+                            ...prev,
+                            containsSpoilers: e.target.checked,
+                          }))
+                        }
+                      />
+                      <label>This review contains spoilers</label>
+                    </div>
+
+                    <div className="text-right">
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black rounded"
+                      >
+                        Update Review
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}
@@ -203,10 +436,10 @@ const ProfilePage = () => {
                   <FiEye className="w-4 h-4 mr-1" />
                   View
                 </Link>
-
               </div>
             </div>
           </div>
+
         </div>
       </div>
     )
