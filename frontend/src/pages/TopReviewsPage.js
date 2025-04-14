@@ -13,13 +13,16 @@ const TopReviewsPage = () => {
   // const [searchResults, setSearchResults] = useState([])
   // const [isSearching, setIsSearching] = useState(false)
   const [activeTab, setActiveTab] = useState("top")
+  // UPDATED: Added filter state
+  const [filter, setFilter] = useState("mostHelpful")
 
   useEffect(() => {
     const fetchReviews = async () => {
       setLoading(true)
       try {
+        // UPDATED: Added filter parameter to the API calls
         const [topRes, recentRes] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_URL}/reviews/top?limit=10`),
+          fetch(`${process.env.REACT_APP_API_URL}/reviews/top?limit=10&sort=${filter}`),
           fetch(`${process.env.REACT_APP_API_URL}/reviews?sort=newest&limit=10`),
         ])
 
@@ -35,28 +38,16 @@ const TopReviewsPage = () => {
     }
 
     fetchReviews()
-  }, [])
-
-  // const handleSearch = async (e) => {
-  //   e.preventDefault()
-
-  //   if (!searchTerm.trim()) return
-
-  //   setIsSearching(true)
-  //   try {
-  //     const res = await fetch(`${process.env.REACT_APP_API_URL}/movies/search?q=${encodeURIComponent(searchTerm)}`)
-  //     const data = await res.json()
-  //     setSearchResults(data.movies || [])
-  //   } catch (error) {
-  //     console.error("Error searching movies:", error)
-  //   } finally {
-  //     setIsSearching(false)
-  //   }
-  // }
+  }, [filter]) // UPDATED: Added filter as dependency
 
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" }
     return new Date(dateString).toLocaleDateString(undefined, options)
+  }
+
+  // UPDATED: Added handleFilterChange function
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value)
   }
 
   return (
@@ -64,64 +55,42 @@ const TopReviewsPage = () => {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Top Reviews</h1>
-
-        {/* <div className="mb-8">
-          <form onSubmit={handleSearch} className="flex gap-2 max-w-xl">
-            <input
-              type="search"
-              placeholder="Search for movies to review..."
-              className="flex-1 p-2 bg-purple-800 border border-purple-700 rounded text-white"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded"
-              disabled={isSearching}
-            >
-              {isSearching ? "Searching..." : "Search"}
-            </button>
-          </form>
-
-          {searchResults.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {searchResults.map((movie) => (
-                <Link
-                  key={movie._id}
-                  to={`/movies/${movie._id}`}
-                  className="bg-purple-800 rounded-lg overflow-hidden hover:bg-purple-700 transition-colors"
-                >
-                  <div className="aspect-[2/3] relative">
-                    <img
-                      src={movie.poster || "/placeholder.svg?height=300&width=200"}
-                      alt={movie.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-2">
-                    <h3 className="font-medium line-clamp-1">{movie.title}</h3>
-                    <p className="text-xs text-gray-300">{movie.year}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div> */}
-
         <div className="mb-6 border-b border-purple-800">
-          <div className="flex">
-            <button
-              className={`px-4 py-2 ${activeTab === "top" ? "border-b-2 border-yellow-500 text-yellow-500" : "text-white"}`}
-              onClick={() => setActiveTab("top")}
-            >
-              Most Helpful
-            </button>
-            <button
-              className={`px-4 py-2 ${activeTab === "recent" ? "border-b-2 border-yellow-500 text-yellow-500" : "text-white"}`}
-              onClick={() => setActiveTab("recent")}
-            >
-              Recent Reviews
-            </button>
+          <div className="flex justify-between items-center">
+            <div className="flex">
+              <button
+                className={`px-4 py-2 ${activeTab === "top" ? "border-b-2 border-yellow-500 text-yellow-500" : "text-white"}`}
+                onClick={() => setActiveTab("top")}
+              >
+                Most Helpful
+              </button>
+              <button
+                className={`px-4 py-2 ${activeTab === "recent" ? "border-b-2 border-yellow-500 text-yellow-500" : "text-white"}`}
+                onClick={() => setActiveTab("recent")}
+              >
+                Recent Reviews
+              </button>
+            </div>
+
+            {/* UPDATED: Added filter dropdown */}
+            {activeTab === "top" && (
+              <div className="flex items-center">
+                <label htmlFor="filter" className="mr-2 text-sm">
+                  Filter by:
+                </label>
+                <select
+                  id="filter"
+                  value={filter}
+                  onChange={handleFilterChange}
+                  className="p-2 bg-purple-800 border border-purple-700 rounded text-white"
+                >
+                  <option value="mostHelpful">Most Helpful</option>
+                  <option value="highestRating">Top Rating</option>
+                  <option value="mostLiked">Most Liked</option>
+                  <option value="mostDisliked">Most Disliked</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
 
@@ -143,80 +112,68 @@ const TopReviewsPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {(activeTab === "top" ? topReviews : recentReviews).map((review) =>
-              review.movieId ? (
-                <div key={review._id} className="bg-purple-800/50 rounded-lg p-6">
-                  <div className="flex gap-4">
-                    <Link to={`/movies/${review.movieId?._id}`} className="flex-shrink-0">
-                      <div className="w-16 h-24 bg-purple-800 rounded overflow-hidden">
-                        {review.movieId?.poster && (
-                          <img
-                            src={review.movieId.poster || "/placeholder.svg"}
-                            alt={review.movieId.title}
-                            className="w-full h-full object-cover"
+            {(activeTab === "top" ? topReviews : recentReviews).map((review) => (
+              <div key={review._id} className="bg-purple-800/50 rounded-lg p-6">
+                <div className="flex gap-4">
+                  <Link to={`/movies/${review.movieId._id}`} className="flex-shrink-0">
+                    <div className="w-16 h-24 bg-purple-800 rounded overflow-hidden">
+                      {review.movieId?.poster && (
+                        <img
+                          src={review.movieId.poster || "/placeholder.svg"}
+                          alt={review.movieId.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                  </Link>
+
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <Link to={`/movies/${review.movieId._id}`} className="hover:text-yellow-400">
+                        <h3 className="text-lg font-medium">{review.movieId?.title || "Unknown Movie"}</h3>
+                      </Link>
+
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <FiStar
+                            key={i}
+                            className={`w-4 h-4 ${i < Math.round(review.rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-500"}`}
                           />
-                        )}
+                        ))}
                       </div>
-                    </Link>
+                    </div>
 
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <Link
-                          to={`/movies/${review.movieId?._id}`}
-                          className="hover:text-yellow-400"
-                        >
-                          <h3 className="text-lg font-medium">
-                            {review.movieId?.title || "Unknown Movie"}
-                          </h3>
-                        </Link>
+                    <h4 className="font-medium mb-2">{review.title}</h4>
 
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <FiStar
-                              key={i}
-                              className={`w-4 h-4 ${i < Math.round(review.rating)
-                                  ? "text-yellow-400 fill-yellow-400"
-                                  : "text-gray-500"
-                                }`}
-                            />
-                          ))}
-                        </div>
+                    <p className="text-sm text-gray-300 mb-4 line-clamp-3">{review.content}</p>
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-400">
+                        By {review.userId?.name || "Anonymous"} • {formatDate(review.createdAt)}
                       </div>
 
-                      <h4 className="font-medium mb-2">{review.title}</h4>
-
-                      <p className="text-sm text-gray-300 mb-4 line-clamp-3">
-                        {review.content}
-                      </p>
-
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-400">
-                          By {review.userId?.name || "Anonymous"} •{" "}
-                          {formatDate(review.createdAt)}
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center text-sm text-gray-400">
+                          <FiThumbsUp className="w-4 h-4 mr-1" />
+                          {review.likes?.length || 0}
                         </div>
 
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center text-sm text-gray-400">
-                            <FiThumbsUp className="w-4 h-4 mr-1" />
-                            {review.likes.length || 0}
-                          </div>
-                          <div className="flex items-center text-sm text-gray-400">
-                            <FiThumbsDown className="w-4 h-4 mr-1" />
-                            {review.dislikes.length || 0}
-                          </div>
+                        {/* UPDATED: Added dislikes count */}
+                        <div className="flex items-center text-sm text-gray-400">
+                          <FiThumbsDown className="w-4 h-4 mr-1" />
+                          {review.dislikes?.length || 0}
+                        </div>
 
-                          <div className="flex items-center text-sm text-gray-400">
-                            <FiMessageSquare className="w-4 h-4 mr-1" />
-                            {review.comments.length || 0}
-                          </div>
+                        <div className="flex items-center text-sm text-gray-400">
+                          <FiMessageSquare className="w-4 h-4 mr-1" />
+                          {review.comments?.length || 0}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              ) : null
-            )}
-
+              </div>
+            ))}
 
             {(activeTab === "top" ? topReviews : recentReviews).length === 0 && (
               <div className="text-center py-12 text-gray-400">No reviews found</div>
@@ -229,4 +186,3 @@ const TopReviewsPage = () => {
 }
 
 export default TopReviewsPage
-

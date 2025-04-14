@@ -24,7 +24,6 @@ const AdminLayout = ({ children }) => {
     { path: "/admin/news", icon: <FiFileText className="w-5 h-5" />, label: "News" },
     { path: "/admin/reviews", icon: <FiStar className="w-5 h-5" />, label: "Reviews" },
     { path: "/admin/users", icon: <FiUsers className="w-5 h-5" />, label: "Users" },
-    { path: "/admin/settings", icon: <FiSettings className="w-5 h-5" />, label: "Settings" },
   ]
 
   return (

@@ -18,7 +18,7 @@ const HomePage = () => {
     const fetchMovies = async () => {
       try {
         const [topRated, inTheatres, comingSoon, upcoming] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_URL}/movies?category=top-rated&limit=4`).then((res) => res.json()),
+          fetch(`${process.env.REACT_APP_API_URL}/movies?sort=rating&limit=4`).then((res) => res.json()),
           fetch(`${process.env.REACT_APP_API_URL}/movies?category=in-theatres&limit=4`).then((res) => res.json()),
           fetch(`${process.env.REACT_APP_API_URL}/movies?category=coming-soon&limit=4`).then((res) => res.json()),
           fetch(`${process.env.REACT_APP_API_URL}/movies?category=upcoming&limit=4`).then((res) => res.json()),
@@ -81,27 +81,7 @@ const HomePage = () => {
     <div className="min-h-screen bg-purple-900 text-white">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        {/* Hero Section - Placeholder */}
-        
-        {/* <div className="relative mt-6 mb-12 rounded-xl overflow-hidden">
-          <div className="aspect-[21/9] relative bg-purple-800">
-            <img
-              src="/images/interstellar_movie-wide.jpg?height=600&width=1400"
-              alt="Featured movie"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 to-transparent" />
-
-            <div className="absolute bottom-0 left-0 p-8 max-w-lg">
-              <h1 className="text-3xl font-bold mb-2">Interstellar Re-Release</h1>
-              <h2 className="text-xl font-medium mb-2">Tickets now Available for IMAX Screens All Across India!!</h2>
-              <p className="text-purple-200 mb-4">Interstellar Re-releases in India on February 7</p>
-            </div>
-          </div>
-        </div> */}
-
         <NewsList />
-
         {renderMovieSection("Critics Top Rated", topRatedMovies, "top-rated")}
         {renderMovieSection("In Cinemas Near You", inTheatresMovies, "in-theatres")}
         {renderMovieSection("Coming Soon to Theaters", comingSoonMovies, "coming-soon")}
