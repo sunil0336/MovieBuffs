@@ -1,183 +1,251 @@
 "use client"
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
+import { FiThumbsUp, FiThumbsDown, FiFlag, FiShare2, FiMessageSquare, FiEdit, FiTrash } from "react-icons/fi"
 import { useAuth } from "../contexts/AuthContext"
-import StarRating from "./StarRating"
+// import StarRating from "./StarRating"
+import CommentSection from "./CommentSection"
+import ShareModal from "./ShareModal"
+import api from "../services/api"
 
-const TvShowReviewForm = ({ tvShowId, tvShowTitle, onReviewAdded }) => {
-  const navigate = useNavigate()
+const TvShowReviewForm = ({ review, onDelete, onUpdate }) => {
   const { user } = useAuth()
-  const [rating, setRating] = useState(0)
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
-  const [containsSpoilers, setContainsSpoilers] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState("")
+  const [likes, setLikes] = useState(review.likes?.length || 0)
+  const [dislikes, setDislikes] = useState(review.dislikes?.length || 0)
+  const [userLiked, setUserLiked] = useState(review.likes?.includes(user?.id))
+  const [userDisliked, setUserDisliked] = useState(review.dislikes?.includes(user?.id))
+  const [showComments, setShowComments] = useState(false)
+  const [comments, setComments] = useState(review.comments || [])
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  useEffect(() => {
+    // Update state when review prop changes
+    setLikes(review.likes?.length || 0)
+    setDislikes(review.dislikes?.length || 0)
+    setUserLiked(review.likes?.includes(user?.id))
+    setUserDisliked(review.dislikes?.includes(user?.id))
+    setComments(review.comments || [])
+  }, [review, user])
 
-    if (!user) {
-      setError("You must be logged in to submit a review")
-      return
-    }
-
-    if (rating === 0) {
-      setError("Please select a rating")
-      return
-    }
-
-    setIsSubmitting(true)
-    setError("")
+  const handleLike = async () => {
+    if (!user) return
 
     try {
-      // Use the new TV show review endpoint
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/tvshows/${tvShowId}/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          rating,
-          title,
-          content,
-          containsSpoilers,
-        }),
-        credentials: "include",
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to submit review")
-      }
-
-      setSubmitted(true)
-
-      if (onReviewAdded) {
-        onReviewAdded(data.review)
-      }
+      const res = await api.put(`/tvshowreviews/${review._id}/like`)
+      setLikes(res.data.likes)
+      setDislikes(res.data.dislikes)
+      setUserLiked(res.data.userLiked)
+      setUserDisliked(res.data.userDisliked)
     } catch (error) {
-      console.error("Error submitting TV show review:", error)
-      setError(error.message || "Failed to submit review. Please try again.")
-    } finally {
-      setIsSubmitting(false)
+      console.error("Error liking review:", error)
     }
   }
 
-  const resetForm = () => {
-    setRating(0)
-    setTitle("")
-    setContent("")
-    setContainsSpoilers(false)
-    setSubmitted(false)
-    setError("")
+  const handleDislike = async () => {
+    if (!user) return
+
+    try {
+      const res = await api.put(`/tvshowreviews/${review._id}/dislike`)
+      setLikes(res.data.likes)
+      setDislikes(res.data.dislikes)
+      setUserLiked(res.data.userLiked)
+      setUserDisliked(res.data.userDisliked)
+    } catch (error) {
+      console.error("Error disliking review:", error)
+    }
   }
 
-  if (!user) {
-    return (
-      <div className="bg-purple-800/50 rounded-lg p-8 text-center">
-        <h3 className="text-xl font-medium mb-4">Sign in to review this TV show</h3>
-        <p className="text-gray-300 mb-6">You need to be logged in to submit a review.</p>
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={() => navigate("/login")}
-            className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded"
-          >
-            Sign In
-          </button>
-          <button
-            onClick={() => navigate("/register")}
-            className="px-4 py-2 border border-white text-white hover:bg-purple-800 rounded"
-          >
-            Create Account
-          </button>
-        </div>
-      </div>
-    )
+  const handleAddComment = async (text) => {
+    try {
+      const res = await api.post(`/tvshowreviews/${review._id}/comments`, { text })
+      setComments(res.data.comments)
+    } catch (error) {
+      console.error("Error adding comment:", error)
+    }
   }
 
-  if (submitted) {
-    return (
-      <div className="bg-purple-800/50 rounded-lg p-8 text-center">
-        <h3 className="text-xl font-medium mb-4">Thank you for your review!</h3>
-        <p className="text-gray-300 mb-6">
-          Your TV show review has been submitted and will be visible after moderation.
-        </p>
-        <button onClick={resetForm} className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded">
-          Write another review
-        </button>
-      </div>
-    )
+  const handleDeleteComment = async (commentId) => {
+    try {
+      const res = await api.delete(`/tvshowreviews/${review._id}/comments/${commentId}`)
+      setComments(res.data.comments)
+    } catch (error) {
+      console.error("Error deleting comment:", error)
+    }
   }
+
+  const handleDeleteReview = async () => {
+    if (!window.confirm("Are you sure you want to delete this review?")) return
+
+    setIsDeleting(true)
+    try {
+      await api.delete(`/tvshowreviews/${review._id}`)
+      if (onDelete) onDelete(review._id)
+    } catch (error) {
+      console.error("Error deleting review:", error)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const getInitials = (name) => {
+    if (!name) return "U"
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2)
+  }
+
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" }
+    return new Date(dateString).toLocaleDateString(undefined, options)
+  }
+
+  const isOwner = user && review.userId?._id === user.id
+  const isAdmin = user && user.role === "admin"
 
   return (
-    <div className="bg-purple-800/50 rounded-lg p-6">
-      <h3 className="text-xl font-medium mb-6">Review TV Show: "{tvShowTitle}"</h3>
+    <div className="bg-black/40 rounded-lg p-6">
+      <div className="flex items-start gap-4">
+        <Link to={`/profile/${review.userId?._id}`} className="flex-shrink-0">
+          <div className="h-10 w-10 bg-purple-700 rounded-full flex items-center justify-center text-white font-medium">
+            {review.userId?.profileImage ? (
+              <img
+                src={review.userId.profileImage || "/placeholder.svg"}
+                alt={review.userId.name}
+                className="h-full w-full rounded-full object-cover"
+              />
+            ) : (
+              getInitials(review.userId?.name || review.author)
+            )}
+          </div>
+        </Link>
 
-      {error && <div className="bg-red-900/50 border border-red-700 rounded-md p-3 mb-4 text-white">{error}</div>}
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Link to={`/profile/${review.userId?._id}`} className="font-medium hover:text-yellow-400">
+                {review.userId?.name || review.author}
+              </Link>
+              <span className="text-gray-400 text-sm">•</span>
+              <span className="text-gray-400 text-sm">{formatDate(review.createdAt)}</span>
+            </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">Your Rating</label>
-          <StarRating initialRating={rating} onRatingChange={setRating} maxRating={10} />
+            {/* <div className="flex items-center gap-2">
+              <StarRating initialRating={Math.floor(review.rating)} readOnly maxRating={5} />
+              <span className="font-bold">{review.rating}</span>
+              <span className="text-gray-400">/ 5</span>
+            </div> */}
+          </div>
+
+          <h3 className="text-xl font-medium mb-3">{review.title}</h3>
+
+          <p className="text-gray-200 mb-4">{review.content}</p>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
+                  userLiked ? "bg-purple-800/50 text-yellow-400" : "hover:bg-purple-800/30"
+                }`}
+                onClick={handleLike}
+                disabled={!user}
+              >
+                <FiThumbsUp className={`w-4 h-4 ${userLiked ? "fill-yellow-400" : ""}`} />
+                <span>Like</span>
+                {likes > 0 && <span className="ml-1">({likes})</span>}
+              </button>
+
+              <button
+                className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
+                  userDisliked ? "bg-purple-800/50 text-red-400" : "hover:bg-purple-800/30"
+                }`}
+                onClick={handleDislike}
+                disabled={!user}
+              >
+                <FiThumbsDown className={`w-4 h-4 ${userDisliked ? "fill-red-400" : ""}`} />
+                <span>Dislike</span>
+                {dislikes > 0 && <span className="ml-1">({dislikes})</span>}
+              </button>
+
+              <button
+                className="flex items-center gap-1 px-3 py-1 rounded-full text-sm hover:bg-purple-800/30"
+                onClick={() => setShowComments(!showComments)}
+              >
+                <FiMessageSquare className="w-4 h-4" />
+                <span>Comments</span>
+                {comments.length > 0 && <span className="ml-1">({comments.length})</span>}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {(isOwner || isAdmin) && (
+                <>
+                  {onUpdate && (
+                    <button
+                      className="flex items-center gap-1 px-3 py-1 rounded-full text-sm hover:bg-purple-800/30 text-yellow-400"
+                      onClick={() => onUpdate(review)}
+                    >
+                      <FiEdit className="w-4 h-4" />
+                      <span className="hidden sm:inline">Edit</span>
+                    </button>
+                  )}
+
+                  <button
+                    className="flex items-center gap-1 px-3 py-1 rounded-full text-sm hover:bg-purple-800/30 text-red-400"
+                    onClick={handleDeleteReview}
+                    disabled={isDeleting}
+                  >
+                    <FiTrash className="w-4 h-4" />
+                    <span className="hidden sm:inline">{isDeleting ? "Deleting..." : "Delete"}</span>
+                  </button>
+                </>
+              )}
+
+              <button
+                className="flex items-center gap-1 px-3 py-1 rounded-full text-sm hover:bg-purple-800/30"
+                onClick={() => setIsShareModalOpen(true)}
+              >
+                <FiShare2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+
+              {user && (
+                <button className="flex items-center gap-1 px-3 py-1 rounded-full text-sm hover:bg-purple-800/30">
+                  <FiFlag className="w-4 h-4" />
+                  <span className="hidden sm:inline">Report</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div>
-          <label htmlFor="review-title" className="block text-sm font-medium mb-2">
-            Review Title
-          </label>
-          <input
-            id="review-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Summarize your thoughts about this TV show"
-            className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white placeholder:text-gray-400"
-            required
+      {showComments && (
+        <div className="mt-6 border-t border-purple-800 pt-4">
+          <CommentSection
+            comments={comments}
+            onAddComment={handleAddComment}
+            onDeleteComment={handleDeleteComment}
+            currentUserId={user?.id}
+            isAdmin={isAdmin}
           />
         </div>
+      )}
 
-        <div>
-          <label htmlFor="review-content" className="block text-sm font-medium mb-2">
-            Your Review
-          </label>
-          <textarea
-            id="review-content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="What did you think about the story, acting, and production? Would you recommend this show?"
-            className="w-full p-2 bg-purple-900/50 border border-purple-700 rounded text-white placeholder:text-gray-400 min-h-[150px]"
-            required
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="contains-spoilers"
-            checked={containsSpoilers}
-            onChange={(e) => setContainsSpoilers(e.target.checked)}
-            className="rounded bg-transparent border-gray-600"
-          />
-          <label htmlFor="contains-spoilers" className="text-sm">
-            This review contains spoilers
-          </label>
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black rounded"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Submitting..." : "Submit TV Show Review"}
-          </button>
-        </div>
-      </form>
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        type="review"
+        id={review._id}
+        title={review.movieId?.title || "this movie"}
+      />
     </div>
   )
 }
 
 export default TvShowReviewForm
+

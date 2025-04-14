@@ -1,10 +1,8 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { FiStar, FiCalendar, FiClock, FiFilm, FiUsers, FiPlay } from "react-icons/fi"
 import Header from "../components/Header"
-// import TvShowReviewForm from "../components/TvShowReviewForm"
+import TvShowReviewForm from "../components/TvShowReviewForm"
 import ReviewForm from "../components/ReviewForm"
 import ReviewCard from "../components/ReviewCard"
 import WatchlistButton from "../components/WatchlistButton"
@@ -302,7 +300,8 @@ const TvShowDetailPage = () => {
                   </div>
                 ) : reviews.length > 0 ? (
                   reviews.map((review) => (
-                    <ReviewCard key={review._id} review={review} onDelete={handleReviewDeleted} />
+                    <TvShowReviewForm key={review._id} review={review} onDelete={handleReviewDeleted} />
+                    // <ReviewCard key={review._id} review={review} onDelete={handleReviewDeleted} />
                   ))
                 ) : (
                   <div className="bg-purple-800/50 rounded-lg p-6 text-center">
