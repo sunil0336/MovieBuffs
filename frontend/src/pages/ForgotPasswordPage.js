@@ -63,7 +63,7 @@ const ForgotPasswordPage = () => {
 
   return (
     <div className="min-h-screen bg-purple-900 flex items-center justify-center px-4">
-      <div className="absolute top-0 w-full px-10 text-xl"><Header /></div>
+      <div className="absolute top-0 w-full px-10"><Header /></div>
       <div className="w-full max-w-md">
         <div className="bg-purple-800 rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">

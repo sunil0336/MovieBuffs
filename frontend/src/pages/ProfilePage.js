@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { FiEdit2, FiStar, FiFilm, FiTv, FiUser, FiThumbsUp, FiThumbsDown, FiMessageSquare ,FiEye  } from "react-icons/fi"
+import { FiEdit2, FiStar, FiFilm, FiTv, FiUser, FiThumbsUp, FiThumbsDown, FiMessageSquare, FiEye, FiEdit } from "react-icons/fi"
 import { useAuth } from "../contexts/AuthContext"
 import Header from "../components/Header"
 import api from "../services/api"
+import ReviewForm from "../components/ReviewForm"
 
 const ProfilePage = () => {
   const { user } = useAuth()
@@ -15,6 +16,10 @@ const ProfilePage = () => {
   const [activeReviewsTab, setActiveReviewsTab] = useState("movies")
   const [loading, setLoading] = useState(true)
   const [watchlistLoading, setWatchlistLoading] = useState(true)
+  const [editingReview, setEditingReview] = useState(null)
+  const [reviews, setReviews] = useState([]); // ✅ Make sure it's an array, not null or undefined
+
+
 
   useEffect(() => {
     if (user) {
@@ -42,6 +47,19 @@ const ProfilePage = () => {
       setLoading(false)
     }
   }
+
+  const handleEditReview = (review) => {
+    setEditingReview(review)
+  }
+
+  const handleReviewUpdated = (updatedReview) => {
+    setReviews((prevReviews) =>
+      (Array.isArray(prevReviews) ? prevReviews : []).map((r) =>
+        r._id === updatedReview._id ? updatedReview : r
+      )
+    );
+    setEditingReview(null); // close the form after updating
+  };
 
   const fetchWatchlist = async () => {
     setWatchlistLoading(true)
@@ -121,13 +139,46 @@ const ProfilePage = () => {
               <Link to={contentLink} className="hover:text-yellow-400">
                 <h3 className="text-lg font-medium">{contentTitle || "Unknown Title"}</h3>
               </Link>
-
+              
               <div className="flex items-center gap-1">
                 <FiStar className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                 <span className="font-bold">{review.rating}</span>
                 <span className="text-gray-400">/ 5</span>
+                <button
+                  onClick={() => handleEditReview(review)}
+                  className="text-yellow-400 hover:underline flex items-center gap-1 ml-4"
+                >
+                  <FiEdit className="w-3 h-3" /> Edit
+                </button>
               </div>
             </div>
+
+            {editingReview && (
+              <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                <div className="bg-purple-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Edit Review</h2>
+                    <button
+                      onClick={() => setEditingReview(null)}
+                      className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    >
+                      Close
+                    </button>
+                  </div>
+
+                  <ReviewForm
+                    review={editingReview}
+                    movieId={editingReview.movieId?._id}
+                    tvShowId={editingReview.tvShowId?._id}
+                    movieTitle={editingReview.movieId?.title || editingReview.tvShowId?.title}
+                    initialReview={editingReview}
+                    onReviewAdded={handleReviewUpdated}
+                  // onCancel={() => setEditingReview(null)}
+                  // isEditing={true}
+                  />
+                </div>
+              </div>
+            )}
 
             <h4 className="font-medium mb-2">{review.title}</h4>
             <p className="text-sm text-gray-300 mb-2">{review.content}</p>
@@ -148,10 +199,11 @@ const ProfilePage = () => {
                   <FiMessageSquare className="w-4 h-4 mr-1" />
                   {review.comments?.length || 0}
                 </div>
-                <Link to={contentLink} className="flex justify-center text-yellow-400 hover:underline">
-                <FiEye className="w-4 h-4 mr-1" />
+                <Link to={contentLink} className="flex items-center justify-center text-yellow-400 hover:underline">
+                  <FiEye className="w-4 h-4 mr-1" />
                   View
                 </Link>
+
               </div>
             </div>
           </div>
