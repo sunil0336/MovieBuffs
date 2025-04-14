@@ -2,17 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { FiEdit2, FiStar, FiFilm, FiTv } from "react-icons/fi"
+import { FiEdit2, FiStar, FiFilm, FiTv, FiUser, FiThumbsUp, FiThumbsDown, FiMessageSquare ,FiEye  } from "react-icons/fi"
 import { useAuth } from "../contexts/AuthContext"
 import Header from "../components/Header"
 import api from "../services/api"
 
 const ProfilePage = () => {
   const { user } = useAuth()
-  const [userReviews, setUserReviews] = useState({ movies: [], tvShows: [] }) // UPDATED: Changed to object with movies and tvShows arrays
+  const [userReviews, setUserReviews] = useState({ movies: [], tvShows: [] })
   const [watchlist, setWatchlist] = useState({ movies: [], tvShows: [] })
   const [activeTab, setActiveTab] = useState("reviews")
-  const [activeReviewsTab, setActiveReviewsTab] = useState("movies") // UPDATED: Added new state for reviews tab
+  const [activeReviewsTab, setActiveReviewsTab] = useState("movies")
   const [loading, setLoading] = useState(true)
   const [watchlistLoading, setWatchlistLoading] = useState(true)
 
@@ -125,7 +125,7 @@ const ProfilePage = () => {
               <div className="flex items-center gap-1">
                 <FiStar className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                 <span className="font-bold">{review.rating}</span>
-                <span className="text-gray-400">/10</span>
+                <span className="text-gray-400">/ 5</span>
               </div>
             </div>
 
@@ -135,8 +135,21 @@ const ProfilePage = () => {
             <div className="flex justify-between items-center text-sm text-gray-400">
               <span>{new Date(review.createdAt).toLocaleDateString()}</span>
               <div className="flex items-center gap-4">
-                <span>{review.likes?.length || 0} likes</span>
-                <Link to={contentLink} className="text-yellow-400 hover:underline">
+                <div className="flex items-center text-sm text-gray-400">
+                  <FiThumbsUp className="w-4 h-4 mr-1" />
+                  {review.likes?.length || 0}
+                </div>
+
+                <div className="flex items-center text-sm text-gray-400">
+                  <FiThumbsDown className="w-4 h-4 mr-1" />
+                  {review.dislikes?.length || 0}
+                </div>
+                <div className="flex items-center text-sm text-gray-400">
+                  <FiMessageSquare className="w-4 h-4 mr-1" />
+                  {review.comments?.length || 0}
+                </div>
+                <Link to={contentLink} className="flex justify-center text-yellow-400 hover:underline">
+                <FiEye className="w-4 h-4 mr-1" />
                   View
                 </Link>
               </div>
@@ -174,13 +187,22 @@ const ProfilePage = () => {
                 {user.bio && <p className="text-gray-300">Bio: {user.bio}</p>}
               </div>
 
-              <Link
-                to="/profile/edit"
-                className="px-4 py-2 border border-white text-white hover:bg-purple-800 rounded flex items-center gap-2 w-fit mx-auto md:mx-0"
-              >
-                <FiEdit2 className="w-4 h-4" />
-                Edit profile
-              </Link>
+              <div className="flex justify-center gap-12 md:justify-start ">
+                <Link
+                  to="/profile/edit"
+                  className="px-4 py-2 border border-white text-white hover:bg-purple-800 rounded flex items-center gap-2 w-fit mx-auto md:mx-0"
+                >
+                  <FiEdit2 className="w-4 h-4" />
+                  Edit profile
+                </Link>
+                {user.role === "admin" ? <Link
+                  to="/admin"
+                  className="px-4 py-2 border border-white text-white hover:bg-purple-800 rounded flex items-center gap-2 w-fit mx-auto md:mx-0"
+                >
+                  <FiUser className="w-4 h-4" />
+                  Admin DashBoard
+                </Link> : ""}
+              </div>
             </div>
           </div>
         </div>
@@ -189,17 +211,15 @@ const ProfilePage = () => {
         <div className="max-w-3xl mx-auto">
           <div className="flex border-b border-purple-800 mb-6">
             <button
-              className={`px-4 py-2 font-medium ${
-                activeTab === "reviews" ? "text-yellow-400 border-b-2 border-yellow-400" : "text-gray-300"
-              }`}
+              className={`px-4 py-2 font-medium ${activeTab === "reviews" ? "text-yellow-400 border-b-2 border-yellow-400" : "text-gray-300"
+                }`}
               onClick={() => setActiveTab("reviews")}
             >
               Your Reviews
             </button>
             <button
-              className={`px-4 py-2 font-medium ${
-                activeTab === "watchlist" ? "text-yellow-400 border-b-2 border-yellow-400" : "text-gray-300"
-              }`}
+              className={`px-4 py-2 font-medium ${activeTab === "watchlist" ? "text-yellow-400 border-b-2 border-yellow-400" : "text-gray-300"
+                }`}
               onClick={() => setActiveTab("watchlist")}
             >
               Watchlist
@@ -215,18 +235,16 @@ const ProfilePage = () => {
                 {/* UPDATED: Added sub-tabs for movie and TV show reviews */}
                 <div className="flex border border-purple-800 rounded-lg overflow-hidden">
                   <button
-                    className={`px-4 py-1 flex items-center gap-1 ${
-                      activeReviewsTab === "movies" ? "bg-yellow-500 text-black" : "hover:bg-purple-800"
-                    }`}
+                    className={`px-4 py-1 flex items-center gap-1 ${activeReviewsTab === "movies" ? "bg-yellow-500 text-black" : "hover:bg-purple-800"
+                      }`}
                     onClick={() => setActiveReviewsTab("movies")}
                   >
                     <FiFilm className="w-4 h-4" />
                     Movies
                   </button>
                   <button
-                    className={`px-4 py-1 flex items-center gap-1 ${
-                      activeReviewsTab === "tvShows" ? "bg-yellow-500 text-black" : "hover:bg-purple-800"
-                    }`}
+                    className={`px-4 py-1 flex items-center gap-1 ${activeReviewsTab === "tvShows" ? "bg-yellow-500 text-black" : "hover:bg-purple-800"
+                      }`}
                     onClick={() => setActiveReviewsTab("tvShows")}
                   >
                     <FiTv className="w-4 h-4" />

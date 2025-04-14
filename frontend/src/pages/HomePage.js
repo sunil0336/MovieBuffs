@@ -91,7 +91,7 @@ const HomePage = () => {
         {renderMovieSection("Explore Upcoming Movies", upcomingMovies, "upcoming")}
         {renderMovieSection("Fans' Favourites", fansFavourites, "fans-favourites")}
       </main>
-      <footer className="py-6 text-center text-white/60">© 2024 Crictistaan. All rights reserved. Made by Sunil ❤️</footer>
+      <footer className="py-6 text-center text-white/60">&copy; 2025 Crictistaan. All rights reserved.</footer>
     </div>
   )
 }
