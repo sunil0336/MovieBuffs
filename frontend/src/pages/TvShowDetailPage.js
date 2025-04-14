@@ -100,7 +100,7 @@ const TvShowDetailPage = () => {
       {tvShow.backdrop && (
         <div className="relative h-[400px] w-full">
           <div className="absolute inset-0 bg-gradient-to-t from-purple-900 via-purple-900/80 to-transparent"></div>
-          <img src={tvShow.backdrop || "/placeholder.svg"} alt={tvShow.title} className="w-full h-full object-cover" />
+          <img src={tvShow.backdrop || "/placeholder.svg"} alt={tvShow.title} className="w-full h-full object-cover object-top" />
         </div>
       )}
 

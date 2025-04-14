@@ -64,25 +64,51 @@ exports.getReviews = async (req, res, next) => {
 // @desc    Get top reviews
 // @route   GET /api/reviews/top
 // @access  Public
+// GET /reviews/top?limit=10&sort=mostLiked / mostDisliked / highestRating
 exports.getTopReviews = async (req, res, next) => {
   try {
-    const { limit = 10 } = req.query
+    const { limit = 10, sort = "mostLiked" } = req.query
 
-    const reviews = await Review.find({})
-      .populate("userId", "name username profileImage")
-      .populate("movieId", "title year poster")
-      .sort({ helpfulCount: -1 })
-      .limit(Number.parseInt(limit))
+    let sortOption = {}
 
-    res.status(200).json({
-      success: true,
-      count: reviews.length,
-      reviews,
-    })
+    switch (sort) {
+      case "mostLiked":
+        sortOption = { likesCount: -1 }
+        break
+      case "mostDisliked":
+        sortOption = { dislikesCount: -1 }
+        break
+      case "topRating":
+        sortOption = { rating: -1 }
+        break
+      default:
+        sortOption = { likesCount: -1 }
+    }
+
+    // Aggregate reviews with calculated counts
+    const reviews = await Review.aggregate([
+      {
+        $addFields: {
+          likesCount: { $size: { $ifNull: ["$likes", []] } },
+          dislikesCount: { $size: { $ifNull: ["$dislikes", []] } },
+        },
+      },
+      { $sort: sortOption },
+      { $limit: parseInt(limit) },
+    ])
+
+    // Populate movieId and userId (manual population after aggregation)
+    const populatedReviews = await Review.populate(reviews, [
+      { path: "movieId", select: "title poster" },
+      { path: "userId", select: "name" },
+    ])
+
+    res.json({ reviews: populatedReviews })
   } catch (error) {
     next(error)
   }
 }
+
 
 // @desc    Get single review
 // @route   GET /api/reviews/:id

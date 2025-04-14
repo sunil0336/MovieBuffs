@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { FiStar, FiThumbsUp, FiThumbsDown, FiMessageSquare } from "react-icons/fi"
@@ -9,18 +7,13 @@ const TopReviewsPage = () => {
   const [topReviews, setTopReviews] = useState([])
   const [recentReviews, setRecentReviews] = useState([])
   const [loading, setLoading] = useState(true)
-  // const [searchTerm, setSearchTerm] = useState("")
-  // const [searchResults, setSearchResults] = useState([])
-  // const [isSearching, setIsSearching] = useState(false)
   const [activeTab, setActiveTab] = useState("top")
-  // UPDATED: Added filter state
-  const [filter, setFilter] = useState("mostHelpful")
+  const [filter, setFilter] = useState("topRating")
 
   useEffect(() => {
     const fetchReviews = async () => {
       setLoading(true)
       try {
-        // UPDATED: Added filter parameter to the API calls
         const [topRes, recentRes] = await Promise.all([
           fetch(`${process.env.REACT_APP_API_URL}/reviews/top?limit=10&sort=${filter}`),
           fetch(`${process.env.REACT_APP_API_URL}/reviews?sort=newest&limit=10`),
@@ -38,14 +31,13 @@ const TopReviewsPage = () => {
     }
 
     fetchReviews()
-  }, [filter]) // UPDATED: Added filter as dependency
+  }, [filter])
 
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" }
     return new Date(dateString).toLocaleDateString(undefined, options)
   }
 
-  // UPDATED: Added handleFilterChange function
   const handleFilterChange = (e) => {
     setFilter(e.target.value)
   }
@@ -84,8 +76,7 @@ const TopReviewsPage = () => {
                   onChange={handleFilterChange}
                   className="p-2 bg-purple-800 border border-purple-700 rounded text-white"
                 >
-                  <option value="mostHelpful">Most Helpful</option>
-                  <option value="highestRating">Top Rating</option>
+                  <option value="topRating">Top Rating</option>
                   <option value="mostLiked">Most Liked</option>
                   <option value="mostDisliked">Most Disliked</option>
                 </select>
