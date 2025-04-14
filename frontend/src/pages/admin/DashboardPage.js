@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { FiFilm, FiStar, FiUsers, FiPieChart, FiBarChart2, FiTrendingUp } from "react-icons/fi"

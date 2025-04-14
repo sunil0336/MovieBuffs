@@ -1,60 +1,35 @@
+"use client"
 
-import { useState, useEffect, useContext } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { FiStar, FiCalendar, FiClock, FiFilm, FiUsers, FiShare2 } from "react-icons/fi"
+import { useState, useEffect } from "react"
+import { useParams } from "react-router-dom"
+import { FiStar, FiCalendar, FiClock, FiFilm, FiUsers, FiPlay } from "react-icons/fi"
 import Header from "../components/Header"
+// import TvShowReviewForm from "../components/TvShowReviewForm"
 import ReviewForm from "../components/ReviewForm"
 import ReviewCard from "../components/ReviewCard"
 import WatchlistButton from "../components/WatchlistButton"
-import ShareModal from "../components/ShareModal"
-import CommentSection from "../components/CommentSection"
-import { AuthContext } from "../contexts/AuthContext"
 import api from "../services/api"
 
 const TvShowDetailPage = () => {
   const { id } = useParams()
-  const navigate = useNavigate()
-  const { user } = useContext(AuthContext)
   const [tvShow, setTvShow] = useState(null)
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [reviewsLoading, setReviewsLoading] = useState(true)
   const [reviewSort, setReviewSort] = useState("newest")
-  const [shareModalOpen, setShareModalOpen] = useState(false)
-  const [selectedReview, setSelectedReview] = useState(null)
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [showTrailerDialog, setShowTrailerDialog] = useState(false)
 
   useEffect(() => {
     fetchTvShow()
     fetchReviews()
   }, [id, reviewSort])
 
-//   const fetchTvShow = async () => {
-//     setLoading(true)
-//     try {
-//       const res = await api.get(`/tv-shows/${id}`)
-//       setTvShow(res.data.tvshow)
-//     } catch (error) {
-//       console.error("Error fetching TV show:", error)
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-
-const fetchTvShow = async () => {
+  const fetchTvShow = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/tvshows/${id}`)
-
-      if (!res.ok) {
-        if (res.status === 404) {
-          navigate("/404")
-          return
-        }
-        throw new Error("Failed to fetch TV show")
-      }
-
-      const data = await res.json()
-      setTvShow(data.tvshow)
+      const res = await api.get(`/tvshows/${id}`)
+      setTvShow(res.data.tvshow)
     } catch (error) {
       console.error("Error fetching TV show:", error)
     } finally {
@@ -65,6 +40,7 @@ const fetchTvShow = async () => {
   const fetchReviews = async () => {
     setReviewsLoading(true)
     try {
+      // Use the new endpoint for TV show reviews
       const res = await api.get(`/tvshows/${id}/reviews?sort=${reviewSort}`)
       setReviews(res.data.reviews)
     } catch (error) {
@@ -84,17 +60,8 @@ const fetchTvShow = async () => {
     fetchTvShow() // Refresh to get updated rating
   }
 
-  const handleReviewUpdated = (updatedReview) => {
-    setReviews(reviews.map((review) => (review._id === updatedReview._id ? updatedReview : review)))
-  }
-
   const handleSortChange = (e) => {
     setReviewSort(e.target.value)
-  }
-
-  const openShareModal = (review = null) => {
-    setSelectedReview(review)
-    setShareModalOpen(true)
   }
 
   if (loading) {
@@ -150,7 +117,7 @@ const fetchTvShow = async () => {
                 <h3 className="text-lg font-medium mb-2">Rating</h3>
                 <div className="flex items-center gap-2">
                   <FiStar className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  <span className="text-xl font-bold">{tvShow.rating?.toFixed(1) || "N/A"}</span>
+                  <span className="text-xl font-bold">{tvShow.rating.toFixed(1)}</span>
                   <span className="text-gray-400">/10</span>
                 </div>
               </div>
@@ -158,10 +125,10 @@ const fetchTvShow = async () => {
               <div>
                 <h3 className="text-lg font-medium mb-2">Details</h3>
                 <ul className="space-y-2">
-                  {tvShow.releaseDate && (
+                  {tvShow.firstAirDate && (
                     <li className="flex items-center gap-2">
                       <FiCalendar className="w-4 h-4 text-gray-400" />
-                      <span>First aired: {new Date(tvShow.releaseDate).toLocaleDateString()}</span>
+                      <span>First aired: {new Date(tvShow.firstAirDate).toLocaleDateString()}</span>
                     </li>
                   )}
                   {tvShow.status && (
@@ -176,16 +143,16 @@ const fetchTvShow = async () => {
                       <span>Episode length: {tvShow.episodeRunTime} min</span>
                     </li>
                   )}
-                  {tvShow.seasons && (
+                  {tvShow.numberOfSeasons && (
                     <li className="flex items-center gap-2">
                       <FiFilm className="w-4 h-4 text-gray-400" />
-                      <span>Seasons: {tvShow.seasons}</span>
+                      <span>Seasons: {tvShow.numberOfSeasons}</span>
                     </li>
                   )}
-                  {tvShow.episodes && (
+                  {tvShow.numberOfEpisodes && (
                     <li className="flex items-center gap-2">
                       <FiFilm className="w-4 h-4 text-gray-400" />
-                      <span>Episodes: {tvShow.episodes}</span>
+                      <span>Episodes: {tvShow.numberOfEpisodes}</span>
                     </li>
                   )}
                 </ul>
@@ -203,15 +170,8 @@ const fetchTvShow = async () => {
                 </div>
               </div>
 
-              <div className="pt-4 space-y-2">
+              <div className="pt-4">
                 <WatchlistButton tvShowId={tvShow._id} />
-                <button
-                  onClick={() => openShareModal()}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-800 hover:bg-purple-700 rounded-lg transition-colors"
-                >
-                  <FiShare2 className="w-4 h-4" />
-                  Share TV Show
-                </button>
               </div>
             </div>
           </div>
@@ -220,11 +180,13 @@ const fetchTvShow = async () => {
           <div className="md:w-2/3 lg:w-3/4">
             <h1 className="text-3xl font-bold mb-2">{tvShow.title}</h1>
 
-            {tvShow.creator && <p className="text-gray-300 mb-6">Created by {tvShow.creator}</p>}
+            {tvShow.creators && tvShow.creators.length > 0 && (
+              <p className="text-gray-300 mb-6">Created by {tvShow.creators.join(", ")}</p>
+            )}
 
             <div className="mb-8">
               <h2 className="text-xl font-medium mb-4">Overview</h2>
-              <p className="text-gray-200 leading-relaxed">{tvShow.plot}</p>
+              <p className="text-gray-200 leading-relaxed">{tvShow.overview}</p>
             </div>
 
             {tvShow.cast && tvShow.cast.length > 0 && (
@@ -237,19 +199,38 @@ const fetchTvShow = async () => {
               </div>
             )}
 
-            {/* {tvShow.trailer && (
+            {tvShow.trailer && (
               <div className="mb-8">
                 <h2 className="text-xl font-medium mb-4">Trailer</h2>
-                <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${tvShow.trailer.split("v=")[1]}`}
-                    title={`${tvShow.title} Trailer`}
-                    className="w-full h-full"
-                    allowFullScreen
-                  ></iframe>
-                </div>
+                <button
+                  onClick={() => setShowTrailerDialog(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                >
+                  <FiPlay className="w-5 h-5" /> Watch Trailer
+                </button>
+
+                {showTrailerDialog && (
+                  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+                    <div className="relative w-full max-w-4xl">
+                      <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${tvShow.trailer.split("v=")[1]}`}
+                          title={`${tvShow.title} Trailer`}
+                          className="w-full h-full"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                      <button
+                        onClick={() => setShowTrailerDialog(false)}
+                        className="absolute -top-10 right-0 text-white hover:text-gray-300"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            )} */}
+            )}
 
             {/* Reviews Section */}
             <div className="mt-12">
@@ -268,17 +249,36 @@ const fetchTvShow = async () => {
                 </select>
               </div>
 
-              {user ? (
-                <ReviewForm tvShowId={tvShow._id} tvShowTitle={tvShow.title} onReviewAdded={handleReviewAdded} />
+              {!showReviewForm ? (
+                <button
+                  onClick={() => setShowReviewForm(true)}
+                  className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-black rounded-lg font-medium mb-8"
+                >
+                  Write a TV Show Review
+                </button>
               ) : (
-                <div className="bg-purple-800/50 rounded-lg p-6 text-center mb-8">
-                  <h3 className="text-xl font-medium mb-2">Want to leave a review?</h3>
-                  <p className="text-gray-300 mb-4">Sign in to share your thoughts about this TV show.</p>
+                <div className="mb-8">
+                  {/* <TvShowReviewForm
+                    tvShowId={tvShow._id}
+                    tvShowTitle={tvShow.title}
+                    onReviewAdded={(review) => {
+                      handleReviewAdded(review)
+                      setShowReviewForm(false)
+                    }}
+                  /> */}
+                  <ReviewForm 
+                    tvShowId={tvShow._id}
+                    tvShowTitle={tvShow.title}
+                    onReviewAdded={(review) => {
+                      handleReviewAdded(review)
+                      setShowReviewForm(false)
+                    }}
+                  />
                   <button
-                    onClick={() => navigate("/login")}
-                    className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded-lg transition-colors"
+                    onClick={() => setShowReviewForm(false)}
+                    className="mt-4 px-4 py-2 border border-gray-500 text-white hover:bg-purple-800 rounded"
                   >
-                    Sign In
+                    Cancel
                   </button>
                 </div>
               )}
@@ -302,15 +302,7 @@ const fetchTvShow = async () => {
                   </div>
                 ) : reviews.length > 0 ? (
                   reviews.map((review) => (
-                    <div key={review._id} className="space-y-4">
-                      <ReviewCard
-                        review={review}
-                        onDelete={handleReviewDeleted}
-                        onUpdate={handleReviewUpdated}
-                        onShare={() => openShareModal(review)}
-                      />
-                      <CommentSection reviewId={review._id} />
-                    </div>
+                    <ReviewCard key={review._id} review={review} onDelete={handleReviewDeleted} />
                   ))
                 ) : (
                   <div className="bg-purple-800/50 rounded-lg p-6 text-center">
@@ -323,14 +315,6 @@ const fetchTvShow = async () => {
           </div>
         </div>
       </main>
-
-      {/* Share Modal */}
-      <ShareModal
-        isOpen={shareModalOpen}
-        onClose={() => setShareModalOpen(false)}
-        item={selectedReview || tvShow}
-        type={selectedReview ? "review" : "tvshow"}
-      />
     </div>
   )
 }

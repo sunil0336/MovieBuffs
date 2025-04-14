@@ -1,5 +1,5 @@
+const TvShowReview = require("../models/TvShowReview") // UPDATED: Using dedicated TvShowReview model
 const TvShow = require("../models/TvShow")
-const Review = require("../models/Review")
 const mongoose = require("mongoose")
 
 // @desc    Get all TV shows
@@ -145,7 +145,7 @@ exports.deleteTvShow = async (req, res, next) => {
     }
 
     // Delete all reviews for this TV show
-    await Review.deleteMany({ tvShowId: req.params.id })
+    await TvShowReview.deleteMany({ tvShowId: req.params.id })
 
     // Delete the TV show
     await tvshow.deleteOne()
@@ -188,15 +188,16 @@ exports.getTvShowReviews = async (req, res, next) => {
     // Pagination
     const skip = (Number.parseInt(page) - 1) * Number.parseInt(limit)
 
+    // UPDATED: Using TvShowReview model instead of Review
     // Execute query with population
-    const reviews = await Review.find({ tvShowId: req.params.id })
+    const reviews = await TvShowReview.find({ tvShowId: req.params.id })
       .populate("userId", "name username profileImage")
       .sort(sortOptions)
       .skip(skip)
       .limit(Number.parseInt(limit))
 
     // Get total count
-    const total = await Review.countDocuments({ tvShowId: req.params.id })
+    const total = await TvShowReview.countDocuments({ tvShowId: req.params.id })
 
     res.status(200).json({
       success: true,

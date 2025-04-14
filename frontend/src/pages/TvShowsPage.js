@@ -152,6 +152,6 @@ const TvShowsPage = () => {
       </main>
     </div>
   )
-}
+} 
 
 export default TvShowsPage
