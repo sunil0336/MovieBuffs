@@ -1,5 +1,3 @@
-"use client"
-
 import React, { createContext, useState, useEffect } from "react"
 import axios from "axios"
 
@@ -30,7 +28,6 @@ export const AuthProvider = ({ children }) => {
     loadUser()
   }, [])
 
-  // Register user
   const register = async (userData) => {
     setLoading(true)
     setError(null)
@@ -47,7 +44,6 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Login user
   const login = async (email, password) => {
     setLoading(true)
     setError(null)
@@ -64,7 +60,6 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Logout user
   const logout = async () => {
     setLoading(true)
 

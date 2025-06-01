@@ -21,7 +21,6 @@ const TvShowReviewForm = ({ review, onDelete, onUpdate }) => {
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
-    // Update state when review prop changes
     setLikes(review.likes?.length || 0)
     setDislikes(review.dislikes?.length || 0)
     setUserLiked(review.likes?.includes(user?.id))

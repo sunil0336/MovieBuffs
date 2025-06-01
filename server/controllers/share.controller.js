@@ -39,6 +39,7 @@ exports.shareMovie = async (req, res, next) => {
       // Draw placeholder if image fails to load
       ctx.fillStyle = "#5b21b6"
       ctx.fillRect(50, 100, 200, 300)
+      
       ctx.fillStyle = "#ffffff"
       ctx.font = "20px Arial"
       ctx.fillText("No Image", 100, 250)
@@ -122,9 +123,11 @@ exports.shareReview = async (req, res, next) => {
       // Draw placeholder if image fails to load
       ctx.fillStyle = "#5b21b6"
       ctx.fillRect(50, 100, 150, 225)
+
       ctx.fillStyle = "#ffffff"
       ctx.font = "16px Arial"
       ctx.fillText("No Image", 80, 210)
+
     }
 
     // Draw movie title

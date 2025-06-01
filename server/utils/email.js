@@ -1,27 +1,18 @@
 const nodemailer = require("nodemailer")
 
 const sendEmail = async (options) => {
-  // Create a transporter
-  // const transporter = nodemailer.createTransport({
-  //   host: process.env.SMTP_HOST || "smtp.mailtrap.io",
-  //   port: process.env.SMTP_PORT || 2525,
-  //   auth: {
-  //     user: process.env.SMTP_EMAIL || "your_mailtrap_username",
-  //     pass: process.env.SMTP_PASSWORD || "your_mailtrap_password",
-  //   },
-  // })
   const transporter = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
+    host: 'smtp.gmail.com',
     port: 587,
     auth: {
-        user: 'justen.weissnat@ethereal.email',
-        pass: 'XkrPw3DhWwE23PXXuw'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
   // Define email options
   const mailOptions = {
-    from: `${process.env.FROM_NAME || "Crictistaan"} <${process.env.FROM_EMAIL || "noreply@crictistaan.com"}>`,
+    from: `${process.env.FROM_NAME || "Criticstaan"} <${process.env.FROM_EMAIL || process.env.EMAIL_USER}>`,
     to: options.email,
     subject: options.subject,
     text: options.message,
@@ -32,4 +23,6 @@ const sendEmail = async (options) => {
 }
 
 module.exports = sendEmail
+
+
 

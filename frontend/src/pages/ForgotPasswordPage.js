@@ -36,7 +36,7 @@ const ForgotPasswordPage = () => {
     try {
       await api.post("/auth/forgot-password", { email })
       setStep(2)
-      setMessage("OTP sent (check console on server)")
+      setMessage("OTP sent to emaiL.")
     } catch (err) {
       setError(err.response?.data?.error || "Failed to generate OTP")
     } finally {
