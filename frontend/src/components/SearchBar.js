@@ -6,34 +6,44 @@ import { FiSearch, FiX } from "react-icons/fi"
 const SearchBar = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState("")
   const searchTimeout = useRef(null)
+  const lastSearchTerm = useRef("")
 
   useEffect(() => {
+    // Clear any existing timer
     if (searchTimeout.current) {
       clearTimeout(searchTimeout.current)
     }
 
+    // Set new debounce timer
     searchTimeout.current = setTimeout(() => {
-      if (onSearch && searchTerm.trim() !== "") {
-        onSearch(searchTerm)
+      const trimmed = searchTerm.trim()
+      if (
+        onSearch &&
+        trimmed !== "" &&
+        trimmed !== lastSearchTerm.current // Avoid duplicate calls
+      ) {
+        onSearch(trimmed)
+        lastSearchTerm.current = trimmed
       }
     }, 500)
 
     return () => {
-      if (searchTimeout.current) {
-        clearTimeout(searchTimeout.current)
-      }
+      clearTimeout(searchTimeout.current)
     }
   }, [searchTerm, onSearch])
 
   const handleSearch = (e) => {
     e.preventDefault()
-    if (onSearch) {
-      onSearch(searchTerm)
+    const trimmed = searchTerm.trim()
+    if (onSearch && trimmed !== "") {
+      onSearch(trimmed)
+      lastSearchTerm.current = trimmed
     }
   }
 
   const clearSearch = () => {
     setSearchTerm("")
+    lastSearchTerm.current = ""
     if (onSearch) {
       onSearch("")
     }
@@ -72,4 +82,3 @@ const SearchBar = ({ onSearch }) => {
 }
 
 export default SearchBar
-
